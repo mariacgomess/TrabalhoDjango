@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+</head>
+<body>
+
+    <h1>Todo List</h1>
+
+    <ul>
+        {% for todo in todos %}
+            <li>
+                {{ todo.title }} —
+                {% if todo.completed %}
+                    Completed
+                {% else %}
+                    Not completed
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
