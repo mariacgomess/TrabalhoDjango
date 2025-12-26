@@ -121,3 +121,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Substitui 'nome_da_tua_app' pelo nome da pasta onde está o models.py (ex: app, core, contas...)
+AUTH_USER_MODEL = 'myfarmacia.Utilizador'
