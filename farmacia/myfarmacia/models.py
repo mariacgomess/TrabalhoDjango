@@ -92,3 +92,14 @@ class LinhaPedido(models.Model):
     def __str__(self):
         return f"{self.tipo} - {self.componente} - {self.quantidade} - {self.pedido}" 
 
+class TipoUtilizador(models.TextChoices):
+    BANCO = "Banco"
+    DADOR = "Dador"
+    HOSPITAL = "Hospital"
+
+class Utilizador(models.Model):
+    utilizador = models.CharField(max_length=10, choices=TipoUtilizador.choices)
+    palavra_passe = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.utilizador} - {self.palavra_passe}" 
