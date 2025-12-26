@@ -206,3 +206,15 @@ def listar_postos(request):
 def logout_view(request):
     django_logout(request) # Usamos o nome que definimos no import
     return redirect('home')
+
+def gestao_dadores(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'gestao_dadores.html')
+
+def gestao_doacoes(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'gestao_doacoes.html')
+
+def consultas_estatisticas(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'consultas_estatisticas.html')

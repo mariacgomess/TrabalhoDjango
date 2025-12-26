@@ -15,4 +15,7 @@ urlpatterns = [
     path('posto/', views.pagina_posto, name='pagina_posto'),
     path('hospital/', views.pagina_hospital, name='pagina_hospital'),
     path("logout/", views.logout_view, name="logout"),
+    path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
+    path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),
+    path("posto/consultas_estatisticas/", views.consultas_estatisticas, name="consultas_estatisticas"),
 ]
