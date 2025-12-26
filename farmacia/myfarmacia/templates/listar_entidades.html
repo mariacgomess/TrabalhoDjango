@@ -1,25 +1,112 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Entidades | Banco de Sangue</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
 
-{% block content %}
-<div style="max-width: 900px; margin: 40px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
-    <h2 style="color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 12px;">
-        {{ titulo }}
-    </h2>
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
 
-    <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
+        h2 {
+            color: #7a1c1c;
+            border-bottom: 2px solid #7a1c1c;
+            padding-bottom: 12px;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        thead tr {
+            background-color: #7a1c1c;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .info-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>{{ titulo }}</h2>
+
+    <table>
         <thead>
-            <tr style="background-color: #7a1c1c; color: white;">
-                <th style="padding: 14px; text-align: left;">Nome</th>
-                <th style="padding: 14px; text-align: left;">Localização / Contacto</th>
-                <th style="padding: 14px; text-align: left;">Banco Associado</th>
+            <tr>
+                <th>Nome</th>
+                <th>Localização / Contacto</th>
+                <th>Banco Associado</th>
             </tr>
         </thead>
         <tbody>
             {% for e in entidades %}
-            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
-                <td style="padding: 14px; font-weight: bold;">{{ e.nome }}</td>
-                <td style="padding: 14px;">{{ e.morada|default:e.telefone }}</td>
-                <td style="padding: 14px;">{{ e.banco.nome }}</td>
+            <tr>
+                <td style="font-weight: bold;">{{ e.nome }}</td>
+                <td class="info-cell">
+                    {% if e.morada %}<span>{{ e.morada }}</span>{% endif %}
+                    {% if e.telefone %}<span>{{ e.telefone }}</span>{% endif %}
+                </td>
+                <td>{{ e.banco.nome }}</td>
             </tr>
             {% empty %}
             <tr>
@@ -31,11 +118,11 @@
         </tbody>
     </table>
 
-    <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
-        <a href="{% url 'pagina_admin' %}" style="text-decoration: none; color: #7a1c1c; font-weight: bold;">
-            &larr; Voltar ao Dashboard
-        </a>
-        <span style="background: #eee; padding: 6px 14px; border-radius: 20px; font-size: 13px;">Banco de Sangue</span>
+    <div class="footer">
+        <a href="{% url 'pagina_admin' %}">← Voltar ao Dashboard</a>
+        <span class="badge">Banco de Sangue</span>
     </div>
 </div>
-{% endblock %}
+
+</body>
+</html>
