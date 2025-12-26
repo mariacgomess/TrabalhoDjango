@@ -6,6 +6,6 @@ def home(request):
     return render(request, "base.html") 
 def todos(request):
     items= TodoItem.objects.all()
-    return render (request, "todos.html", {"todos":items})
+    return render (request, "todos.html", {"todosa":items})
 def login_view(request):
     return render (request, "login.html")
