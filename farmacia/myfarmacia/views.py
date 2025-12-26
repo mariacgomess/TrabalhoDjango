@@ -188,7 +188,8 @@ def listar_hospitais(request):
     hospitais = Hospital.objects.all()
     return render(request, 'listar_entidades.html', {
         'entidades': hospitais,
-        'titulo': "Hospitais Registados"
+        'titulo': "Hospitais Registados",
+        'tipo_entidade': 'hospital' 
     })
 
 @login_required
@@ -199,7 +200,8 @@ def listar_postos(request):
     postos = PostoRecolha.objects.all()
     return render(request, 'listar_entidades.html', {
         'entidades': postos,
-        'titulo': "Postos de Recolha Registados"
+        'titulo': "Postos de Recolha Registados",
+        'tipo_entidade': 'posto' 
     })
 
 
