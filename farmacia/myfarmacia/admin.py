@@ -21,5 +21,3 @@ admin.site.register(Doacao)
 admin.site.register(Hospital)
 admin.site.register(Pedido)
 admin.site.register(LinhaPedido)
-
-print("ola")
