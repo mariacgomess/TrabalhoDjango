@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Banco de Sangue</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f2f2f2;
+        }
+
+        header {
+            background-color: rgba(54, 188, 5, 0.395);
+            color: brown;
+            padding: 20px;
+        }
+
+        nav a {
+            color: rgb(64, 0, 255);
+            margin-right: 15px;
+            text-decoration: none;
+        }
+
+        .login-box {
+            width: 300px;
+            margin: 60px auto;
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        .login-box input,
+        .login-box select {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Banco de Sangue</h1>
+    <p>Bem-vindo/a!</p>
+    <nav>
+        <a href="/">Voltar à página inicial</a>
+    </nav>
+</header>
+
+<div class="login-box">
+    <h2>Login</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label>Tipo de utilizador</label>
+        <select name="tipo">
+            <option value="posto">Posto de Recolha</option>
+            <option value="hospital">Hospital</option>
+            <option value="admin">Administrador</option>
+        </select>
+
+        <label>Username</label>
+        <input type="text" name="username">
+
+        <label>Password</label>
+        <input type="password" name="password">
+
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+
+</body>
+</html>
