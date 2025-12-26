@@ -98,7 +98,7 @@ class TipoUtilizador(models.TextChoices):
     HOSPITAL = "Hospital"
 
 class Utilizador(models.Model):
-    utilizador = models.CharField(max_length=10, choices=TipoUtilizador.choices)
+    utilizador = models.CharField(max_length=100, choices=TipoUtilizador.choices)
     username = models.CharField(max_length=100)
     palavra_passe = models.CharField(max_length=100)
 
