@@ -53,6 +53,16 @@
 <div class="login-box">
     <h2>Login</h2>
 
+    {% if messages %}
+        <ul class="messages" style="padding: 0; margin-bottom: 15px;">
+            {% for message in messages %}
+                <li class="{{ message.tags }}" style="color: red; list-style: none; font-weight: bold;">
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <form method="post">
         {% csrf_token %}
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -92,15 +93,13 @@ class LinhaPedido(models.Model):
     def __str__(self):
         return f"{self.tipo} - {self.componente} - {self.quantidade} - {self.pedido}" 
 
-class TipoUtilizador(models.TextChoices):
-    BANCO = "Banco"
-    DADOR = "PostoRecolha"
-    HOSPITAL = "Hospital"
-
-class Utilizador(models.Model):
-    utilizador = models.CharField(max_length=100, choices=TipoUtilizador.choices)
-    username = models.CharField(max_length=100)
-    palavra_passe = models.CharField(max_length=100)
+class Utilizador(AbstractUser):
+    TIPOS_UTILIZADOR = (
+        ('posto', 'Posto de Recolha'),
+        ('hospital', 'Hospital'),
+        ('admin', 'Administrador'),
+    )
+    tipo = models.CharField(max_length=20, choices=TIPOS_UTILIZADOR, default='posto')
 
     def __str__(self):
-        return f"{self.utilizador} - {self.palavra_passe}" 
+        return f"{self.username} ({self.tipo})"
