@@ -103,3 +103,18 @@ class Utilizador(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.tipo})"
+    
+
+class PerfilPosto(models.Model):
+    user = models.OneToOneField(Utilizador, on_delete=models.CASCADE, related_name='perfil_posto')
+    posto = models.ForeignKey(PostoRecolha, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Perfil de {self.user.username} -> {self.posto.nome}"
+
+class PerfilHospital(models.Model):
+    user = models.OneToOneField(Utilizador, on_delete=models.CASCADE, related_name='perfil_hospital')
+    hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Perfil de {self.user.username} -> {self.hospital.nome}"

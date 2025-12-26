@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 40px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+    <h2 style="color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 12px;">
+        {{ titulo }}
+    </h2>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 25px;">
+        <thead>
+            <tr style="background-color: #7a1c1c; color: white;">
+                <th style="padding: 14px; text-align: left;">Nome</th>
+                <th style="padding: 14px; text-align: left;">Localização / Contacto</th>
+                <th style="padding: 14px; text-align: left;">Banco Associado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for e in entidades %}
+            <tr style="border-bottom: 1px solid #eee; transition: background 0.2s;">
+                <td style="padding: 14px; font-weight: bold;">{{ e.nome }}</td>
+                <td style="padding: 14px;">{{ e.morada|default:e.telefone }}</td>
+                <td style="padding: 14px;">{{ e.banco.nome }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="padding: 20px; text-align: center; color: #777;">
+                    Nenhum registo encontrado.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="{% url 'pagina_admin' %}" style="text-decoration: none; color: #7a1c1c; font-weight: bold;">
+            &larr; Voltar ao Dashboard
+        </a>
+        <span style="background: #eee; padding: 6px 14px; border-radius: 20px; font-size: 13px;">Banco de Sangue</span>
+    </div>
+</div>
+{% endblock %}

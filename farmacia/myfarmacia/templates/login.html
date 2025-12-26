@@ -1,8 +1,7 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Banco de Sangue</title>
 
     <style>
@@ -32,8 +31,7 @@
             border: 1px solid #ccc;
         }
 
-        .login-box input,
-        .login-box select {
+        .login-box input {
             width: 100%;
             margin-bottom: 10px;
         }
@@ -54,9 +52,9 @@
     <h2>Login</h2>
 
     {% if messages %}
-        <ul class="messages" style="padding: 0; margin-bottom: 15px;">
+        <ul style="padding: 0; margin-bottom: 15px;">
             {% for message in messages %}
-                <li class="{{ message.tags }}" style="color: red; list-style: none; font-weight: bold;">
+                <li style="color: red; list-style: none; font-weight: bold;">
                     {{ message }}
                 </li>
             {% endfor %}
@@ -66,18 +64,11 @@
     <form method="post">
         {% csrf_token %}
 
-        <label>Tipo de utilizador</label>
-        <select name="tipo">
-            <option value="posto">Posto de Recolha</option>
-            <option value="hospital">Hospital</option>
-            <option value="admin">Administrador</option>
-        </select>
-
         <label>Username</label>
-        <input type="text" name="username">
+        <input type="text" name="username" required>
 
         <label>Password</label>
-        <input type="password" name="password">
+        <input type="password" name="password" required>
 
         <button type="submit">Entrar</button>
     </form>
