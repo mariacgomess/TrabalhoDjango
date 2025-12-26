@@ -94,11 +94,12 @@ class LinhaPedido(models.Model):
 
 class TipoUtilizador(models.TextChoices):
     BANCO = "Banco"
-    DADOR = "Dador"
+    DADOR = "PostoRecolha"
     HOSPITAL = "Hospital"
 
 class Utilizador(models.Model):
     utilizador = models.CharField(max_length=10, choices=TipoUtilizador.choices)
+    username = models.CharField(max_length=100)
     palavra_passe = models.CharField(max_length=100)
 
     def __str__(self):
