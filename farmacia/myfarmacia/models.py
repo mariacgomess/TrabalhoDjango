@@ -27,10 +27,10 @@ class TipoSangue(models.TextChoices):
 class Dador(models.Model):
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=12)
+    nif = models.CharField(max_length=12, unique=True)
     genero = models.CharField(max_length = 50)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
-    telefone = models.CharField(max_length=9)
+    telefone = models.CharField(max_length=9, unique=True)
     tipo_sangue = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     ativo = models.BooleanField(default=True)
     ultimaDoacao = models.DateField(null=True, blank=True)

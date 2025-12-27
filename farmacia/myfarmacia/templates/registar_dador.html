@@ -99,6 +99,26 @@
     .btn-submit:hover {
         background-color: #8c2828;
     }
+    
+    .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
 </style>
 
 <div class="register-container">
@@ -123,6 +143,11 @@
             <button type="submit" class="btn-submit">Registar Dador</button>
         </form>
     </div>
+</div>
+
+<div class="footer">
+    <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+    <span class="badge">Posto de Sangue</span>
 </div>
 
 {% endblock %}

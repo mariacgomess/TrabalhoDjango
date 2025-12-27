@@ -229,18 +229,15 @@ def gestao_hospital(request):
 
 def gestao_pedidos(request):
     return render(request, 'gestao_pedidos')
-=======
-def registar_dador(request):
-    if request.user.tipo != 'posto':
-        return redirect('gestao_dadores')
 
+def registar_dador(request):
     if request.method == 'POST':
         dador_form = DadorForm(request.POST)
         if dador_form.is_valid():
             dador_criado = dador_form.save()
             
             messages.success(request, f"Dador '{dador_criado.nome}' criado com sucesso!")
-            return redirect('gestao_dador')
+            return redirect('gestao_dadores')
     else:
         dador_form = DadorForm()
 
@@ -250,29 +247,129 @@ def registar_dador(request):
     })
 
 def consultar_dador(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'consultar_dador.html')
+    dador = None
+    search_nif = request.GET.get('nif')
+
+    if search_nif:
+        try:
+            dador = Dador.objects.get(nif=search_nif)
+        except Dador.DoesNotExist:
+            messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
+
+    return render(request, 'consultar_dador.html', {
+        'dador': dador,
+        'titulo': "Dador por NIF"
+    })
 
 def atualizar_informacao(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'atualizar_informacao.html')
+    dador = None
+    form = None
+    #Verificar se foi feita uma pesquisa (pelo GET do URL)
+    nif_pesquisa = request.GET.get('nif_search')
+
+    if nif_pesquisa:
+        try:
+            # Tenta encontrar o dador pelo NIF
+            dador = Dador.objects.get(nif=nif_pesquisa)
+        except Dador.DoesNotExist:
+            messages.error(request, f"Dador com NIF {nif_pesquisa} não encontrado.")
+            # Se não encontrar, mantemos dador=None
+
+    # Lógica do Formulário (Só ativa se tivermos encontrado um dador)
+    if dador:
+        if request.method == 'POST':
+            # Se carregou em "Gravar Alterações", atualizamos os dados
+            form = DadorForm(request.POST, instance=dador)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Dados de {dador.nome} atualizados com sucesso!")
+                return redirect('gestao_dadores') # Ou redireciona para onde quiseres
+        else:
+            # Se acabou de pesquisar, mostramos o formulário preenchido
+            form = DadorForm(instance=dador)
+
+    return render(request, 'atualizar_informacao.html', {
+        'form': form,
+        'dador_encontrado': dador,
+        'nif_pesquisa': nif_pesquisa,
+        'titulo': "Pesquisar e Atualizar Dador"
+    })
 
 def desativar_dador(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'desativar_dador.html')
+    dador = None
+
+    if request.method == 'GET':
+        search_nif = request.GET.get('nif')
+        if search_nif:
+            try:
+                dador = Dador.objects.get(nif=search_nif)
+            except Dador.DoesNotExist:
+                messages.warning(
+                    request,
+                    f"Nenhum dador encontrado com o NIF '{search_nif}'"
+                )
+
+    if request.method == 'POST':
+        nif = request.POST.get('nif')
+        try:
+            dador = Dador.objects.get(nif=nif)
+            dador.ativo = False
+            dador.save()
+
+            messages.success(
+                request,
+                f"O dador {dador.nome} foi desativado com sucesso!"
+            )
+            return redirect('gestao_dadores')
+
+        except Dador.DoesNotExist:
+            messages.error(request, "Erro ao ativar o dador.")
+
+    return render(request, 'desativar_dador.html', {
+        'dador': dador,
+        'titulo': "Desativar Dador"
+    })
 
 def ativar_dador(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'ativar_dador.html')
+    dador = None
+
+    if request.method == 'GET':
+        search_nif = request.GET.get('nif')
+        if search_nif:
+            try:
+                dador = Dador.objects.get(nif=search_nif)
+            except Dador.DoesNotExist:
+                messages.warning(
+                    request,
+                    f"Nenhum dador encontrado com o NIF '{search_nif}'"
+                )
+
+    if request.method == 'POST':
+        nif = request.POST.get('nif')
+        try:
+            dador = Dador.objects.get(nif=nif)
+            dador.ativo = True
+            dador.save()
+
+            messages.success(
+                request,
+                f"O dador {dador.nome} foi ativado com sucesso!"
+            )
+            return redirect('gestao_dadores')
+
+        except Dador.DoesNotExist:
+            messages.error(request, "Erro ao ativar o dador.")
+
+    return render(request, 'ativar_dador.html', {
+        'dador': dador,
+        'titulo': "Ativar Dador"
+    })
 
 def listar_dadores(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'listar_dadores.html')
 
 def dadores_tipo_sangue(request):
-    if request.user.tipo != 'posto':
-        return redirect('gestao_dadores')
-    
     dadores_por_grupo = {}
     for codigo, nome_bonito in TipoSangue.choices:
         # Filtramos pelo CÓDIGO (que é o que está guardado na base de dados)
@@ -285,27 +382,10 @@ def dadores_tipo_sangue(request):
     })
 
 def dadores_apenas_ativos(request):
-    if request.user.tipo != 'posto':
-        return redirect('gestao_dadores')
-    
-    dadores = Dador.objects.filter(ativo=True)
+    dadores_validos = Dador.objects.filter(ativo=True)
     return render(request, 'dadores_apenas_ativos.html', {
-        'entidades': dadores,
-        'titulo': "Dadores registados que estão ativos",
-        'tipo_entidade': 'dadores' 
+        'dadores': dadores_validos,  # <--- O HTML PROCURA ESTE NOME 'dadores'
+        'titulo': "Dadores Ativos"
     })
 
-def dadores_idade_minima(request):
-    if request.user.tipo != 'posto':
-        return redirect('gestao_dadores')
 
-    hoje = date.today()
-    data_limite = date(hoje.year - 18, hoje.month, hoje.day)
-    dadores = Dador.objects.filter(dataNascimento__lte=data_limite)
-
-    return render(request, 'dadores_idade_minima.html', {
-        'entidades': dadores,
-        'titulo': "Dadores registados com idade mínima",
-        'tipo_entidade': 'dadores' 
-    })
->>>>>>> 162976c0ac009d9ec4f9f630ee44e6fc8ae47c4e

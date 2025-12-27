@@ -111,18 +111,14 @@
             <tbody>
                 {% for d in lista_dadores %}
                 <tr>
-                    <td style="font-weight: bold;">
-                        {{ d.Nome }}
-                    </td>
-                    
+                    <td>{{ d.nome }} </td>
                     <td>{{ d.idade }} anos</td>
-                    
                     <td>{{ d.nif|default:"-" }}</td>
                     <td>{{ d.genero|default:"-" }}</td>
                     <td>{{ d.telefone|default:"-" }}</td>
                     
                     <td>
-                        {% if d.is_active %}
+                        {% if d.ativo is True %}
                             <span style="color: green;">Sim</span>
                         {% else %}
                             <span style="color: red;">Não</span>

@@ -94,26 +94,32 @@
         <thead>
             <tr>
                 <th>Nome</th>
+                <th>Sangue</th> 
                 <th>Idade</th>
                 <th>NIF</th>
                 <th>Género</th>
                 <th>Telefone</th>
-                <th>Tipo de Sangue</th>
-                <th>Ultima Doação</th>
+                <th>Última Doação</th>
             </tr>
         </thead>
         <tbody>
             {% for d in dadores %}
             <tr>
                 <td style="font-weight: bold;">{{ d.nome }}</td>
-                <td class="info-cell">
-                    {% if d.idade %}<span>{{ d.nif }}</span>{{ d.genero }}</span>{{ d.telefone }}</span>{{ d.tipo }}</span>{{ d.ultimaDoacao }}</span>{% endif %}
-                </td>
+                
+                <td style="color: #7a1c1c; font-weight: bold;">{{ d.tipo_sangue }}</td>
+                
+                <td>{{ d.idade }} anos</td> 
+                <td>{{ d.nif|default:"-" }}</td>
+                <td>{{ d.genero|default:"-" }}</td>
+                <td>{{ d.telefone|default:"-" }}</td>
+                <td>{{ d.ultimaDoacao|default:"Nunca doou" }}</td>
+                
             </tr>
             {% empty %}
             <tr>
-                <td colspan="3" style="padding: 20px; text-align: center; color: #777;">
-                    Nenhum registo encontrado.
+                <td colspan="6" style="text-align: center; padding: 20px; color: #888; background-color: #fff3f3;">
+                    Não existem dadores ativos no momento.
                 </td>
             </tr>
             {% endfor %}
