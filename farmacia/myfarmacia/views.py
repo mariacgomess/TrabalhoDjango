@@ -220,3 +220,10 @@ def gestao_doacoes(request):
 def consultas_estatisticas(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'consultas_estatisticas.html')
+
+def gestao_hospital(request):
+    
+    return render(request, 'gestao_hospital.html')
+
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos')
