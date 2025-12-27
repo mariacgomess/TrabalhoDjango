@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Atualizar Hospital | Banco de Sangue</title>
+    <style>
+        /* Aqui podes copiar todo o teu CSS do dashboard que já tens */
+        body { font-family: "Segoe UI", Tahoma, sans-serif; background: #f4f6f9; color: #333; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #7a1c1c, #4d0f0f); color: white; padding: 25px 20px; }
+        .sidebar h2 { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; }
+        .content { flex: 1; padding: 30px 40px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { color: #7a1c1c; }
+        .user { background: #eee; padding: 8px 14px; border-radius: 20px; font-size: 14px; }
+        .card, .action-box { background: white; border-radius: 14px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        button { background:#7a1c1c; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2>Banco de Sangue</h2>
+    </aside>
+
+    <main class="content">
+        <div class="header">
+            <h1>Gestão do Hospital</h1>
+            <div class="user">👤 {{ request.user.username }}</div>
+        </div>
+
+        <div class="card">
+            <h3>Atualizar Informações</h3>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">Guardar Alterações</button>
+            </form>
+        </div>
+    </main>
+</div>
+</body>
+</html>

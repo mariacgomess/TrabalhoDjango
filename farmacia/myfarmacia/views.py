@@ -223,13 +223,6 @@ def consultas_estatisticas(request):
     return render(request, 'consultas_estatisticas.html')
 
 
-def gestao_hospital(request):
-    
-    return render(request, 'gestao_hospital.html')
-
-def gestao_pedidos(request):
-    return render(request, 'gestao_pedidos')
-
 def registar_dador(request):
     if request.user.tipo != 'posto':
         return redirect('gestao_dadores')
@@ -307,5 +300,40 @@ def dadores_idade_minima(request):
         'entidades': dadores,
         'titulo': "Dadores registados com idade mínima",
         'tipo_entidade': 'dadores' 
+    })
+
+def gestao_hospital(request):
+    
+    return render(request, 'gestao_hospital.html')
+
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos.html')
+
+@login_required
+def atualizar_hospital(request):
+    if request.user.tipo != 'hospital':
+        messages.error(request, "Acesso negado.")
+        return redirect('home')
+    
+    # Obtemos o hospital associado ao utilizador logado
+    perfil_hospital = getattr(request.user, 'perfilhospital', None)
+    if not perfil_hospital:
+        messages.error(request, "Perfil de hospital não encontrado.")
+        return redirect('home')
+    
+    hospital = perfil_hospital.hospital
+
+    if request.method == 'POST':
+        form = HospitalForm(request.POST, instance=hospital)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "As informações do hospital foram atualizadas com sucesso!")
+            return redirect('pagina_hospital')  # ou outra página de sucesso
+    else:
+        form = HospitalForm(instance=hospital)
+
+    return render(request, 'atualizar_hospital.html', {
+        'form': form,
+        'hospital': hospital
     })
 
