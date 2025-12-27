@@ -165,6 +165,26 @@
         .logout a:hover {
             text-decoration: underline;
         }
+        
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
 
         @media (max-width: 900px) {
             .actions {
@@ -205,8 +225,9 @@
             </div>
         </section>
 
-        <div class="logout">
-            <a href="{% url 'logout' %}">⏻ Sair e Guardar Sessão</a>
+        <div class="footer">
+            <a href="{% url 'pagina_posto' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
         </div>
 
     </main>

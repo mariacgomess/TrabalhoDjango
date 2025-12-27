@@ -71,10 +71,17 @@
             align-items: center;
         }
 
-        .back {
+        .footer a {
             text-decoration: none;
             color: #7a1c1c;
             font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
         }
 
         .back:hover {
@@ -92,16 +99,49 @@
 
 <body>
 
-<div class="container">
+    <div class="container" style="max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
 
-    <h2>{{ titulo }}</h2>
-
-    <div class="footer">
-        <a href="{% url 'gestao_dadores' %}" class="back">← Voltar ao Painel de Gestão de dadores</a>
-        <span class="badge">Banco de Sangue</span>
+        <h2 style="color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 10px;">{{ titulo }}</h2>
+    
+        <form method="GET" style="margin-top: 20px; display: flex; gap: 10px;">
+            <input type="text" name="nif" placeholder="Introduza o NIF..." required
+                   style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <button type="submit" style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">🔍</button>
+        </form>
+    
+        {% if dador %}
+            <div style="margin-top: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+                <h3 style="margin-top: 0; color: #7a1c1c;">{{ dador.nome }}</h3>
+                
+                <p><strong>NIF:</strong> {{ dador.nif }}</p>
+                <p><strong>Tipo de Sangue:</strong> {{ dador.tipo_sangue }}</p>
+                <p><strong>Telefone:</strong> {{ dador.telefone }}</p>
+                <p><strong>Idade:</strong> {{ dador.idade }} anos</p>
+                
+                <p><strong>Estado:</strong> 
+                    {% if dador.ativo %}
+                        <span style="color: green; font-weight: bold;">Ativo</span>
+                    {% else %}
+                        <span style="color: red; font-weight: bold;">Inativo</span>
+                    {% endif %}
+                </p>
+            </div>
+        {% endif %}
+    
+        {% if messages %}
+            <div style="margin-top: 20px;">
+                {% for message in messages %}
+                    <div style="padding: 10px; background: #ffebee; color: #c62828; border-radius: 4px;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    
+        <div class="footer">
+            <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
+        </div>
     </div>
-
-</div>
-
 </body>
 </html>

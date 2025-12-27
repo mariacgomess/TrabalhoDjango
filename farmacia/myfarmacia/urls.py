@@ -30,6 +30,5 @@ urlpatterns = [
     path("posto/gestao_dadores/ativar_dador/", views.ativar_dador, name="ativar_dador"),
     path("posto/gestao_dadores/listar_dadores/", views.listar_dadores, name="listar_dadores"),
     path("posto/gestao_dadores/listar_dadores/dadores_tipo_sangue/", views.dadores_tipo_sangue, name="dadores_tipo_sangue"),
-    path("posto/gestao_dadores/listar_dadores/dadores_apenas_ativos/", views.dadores_apenas_ativos, name="dadores_apenas_ativos"),
-    path("posto/gestao_dadores/listar_dadores/dadores_idade_minima/", views.dadores_idade_minima, name="dadores_idade_minima")
+    path("posto/gestao_dadores/listar_dadores/dadores_apenas_ativos/", views.dadores_apenas_ativos, name="dadores_apenas_ativos")
 ]

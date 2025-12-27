@@ -92,16 +92,92 @@
 
 <body>
 
-<div class="container">
+    <div class="container">
+        <h2>{{ titulo }}</h2>
 
-    <h2>{{ titulo }}</h2>
+        <div style="margin-bottom: 20px; background: #f1f1f1; padding: 15px; border-radius: 8px;">
+            <form method="GET" action="" style="display: flex; gap: 10px; align-items: center;">
+                
+                <label for="search_nif" style="font-weight: bold;">Pesquisar NIF:</label>
+                
+                <input type="text" name="nif" id="search_nif" placeholder="Ex: 123456789" 
+                       value="{{ request.GET.nif }}" 
+                       style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1;">
+                
+                <button type="submit" style="background: #7a1c1c; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    Pesquisar
+                </button>
+                
+                {% if request.GET.nif %}
+                    <a href="?" style="text-decoration: none; color: #666; font-weight: bold;">Limpar</a>
+                {% endif %}
+            </form>
+        </div>
+    
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Sangue</th> 
+                    <th>Idade</th>
+                    <th>Género</th>
+                    <th>Telefone</th>
+                    <th>Última Doação</th>
+                    <th>Ativo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if dador %}
+                <tr>
+                    <td><strong>{{ dador.nome }}</strong></td>
+                    <td>{{ dador.tipo_sangue }}</td>
+                    <td>{{ dador.idade }} anos</td>
+                    <td>{{ dador.genero|default:"-" }}</td>
+                    <td>{{ dador.telefone|default:"-" }}</td>
+                    <td>{{ dador.ultima_doacao|default:"Nunca doou" }}</td>
+                    <td>
+                        {% if dador.ativo %}
+                            <span style="color: green;">Sim</span>
+                        {% else %}
+                            <span style="color: red;">Não</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty">
+                        Nenhum dador encontrado.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
 
-    <div class="footer">
-        <a href="{% url 'gestao_dadores' %}" class="back">← Voltar ao Painel de Gestão de dadores</a>
-        <span class="badge">Banco de Sangue</span>
+        <div style="margin-top: 30px; display: flex; gap: 15px;">
+
+            {% if dador and dador.ativo is True %}
+            <form method="post">
+                {% csrf_token %}
+        
+                <!-- PASSA O NIF NO POST -->
+                <input type="hidden" name="nif" value="{{ dador.nif }}">
+        
+                <button type="submit"
+                    style="background: #7a1c1c; color: white; border: none; padding: 12px 30px;
+                           border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;">
+                    Desativar
+                </button>
+            </form>
+            {% endif %}
+        
+            <a href="{% url 'gestao_dadores' %}"
+               style="padding: 12px 20px; text-decoration: none; color: #555;
+                      background: #eee; border-radius: 4px; font-weight: bold;">
+                Cancelar
+            </a>
+        
+        </div>
     </div>
-
-</div>
-
 </body>
 </html>
