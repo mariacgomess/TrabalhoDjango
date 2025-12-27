@@ -4,35 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banco de Sangue</title>
-<style>
-    body{
-        margin:0; 
-        font-family: 'Times New Roman', Times, serif;
-    }
-    header{
-        background-color: rgba(54, 188, 5, 0.395);
-        color:brown;
-        padding: 20px;
 
+<style>
+    * {
+        box-sizing: border-box;
     }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 30px 40px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+        margin: 0;
+        font-weight: normal;
+    }
+
+    header p {
+        margin: 6px 0 20px 0;
+        opacity: 0.9;
+    }
+
     nav a {
-        color:rgb(64, 0, 255);
-        text-decoration:brown;
-        margin-right: 15px;
+        color: white;
+        text-decoration: none;
+        margin-right: 20px;
+        font-size: 15px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+    nav a:hover {
+        background: rgba(255,255,255,0.15);
+    }
+
+    .container {
+        padding: 40px;
     }
 </style>
+
 </head>
 <body>
+
     <header>
         <h1>Banco de Sangue</h1>
         <p>Bem-vindo/a!</p>
-            <nav>
+        <nav>
             <a href="{% url 'Login' %}">Login</a>
             <a href="#">Ajuda</a>
         </nav>
     </header>
 
-    
 </body>
 </html>
 
