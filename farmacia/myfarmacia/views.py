@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import TodoItem, Utilizador, Banco, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm
+from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
+from datetime import date
 
 # --- Navegação Base ---
 def home(request):
@@ -221,9 +222,90 @@ def consultas_estatisticas(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'consultas_estatisticas.html')
 
+
 def gestao_hospital(request):
     
     return render(request, 'gestao_hospital.html')
 
 def gestao_pedidos(request):
     return render(request, 'gestao_pedidos')
+=======
+def registar_dador(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+
+    if request.method == 'POST':
+        dador_form = DadorForm(request.POST)
+        if dador_form.is_valid():
+            dador_criado = dador_form.save()
+            
+            messages.success(request, f"Dador '{dador_criado.nome}' criado com sucesso!")
+            return redirect('gestao_dador')
+    else:
+        dador_form = DadorForm()
+
+    return render(request, 'registar_dador.html', {
+        'entidade_form': dador_form,
+        'titulo': "Registar Novo Dador"
+    })
+
+def consultar_dador(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'consultar_dador.html')
+
+def atualizar_informacao(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'atualizar_informacao.html')
+
+def desativar_dador(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'desativar_dador.html')
+
+def ativar_dador(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'ativar_dador.html')
+
+def listar_dadores(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'listar_dadores.html')
+
+def dadores_tipo_sangue(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+    
+    dadores_por_grupo = {}
+    for codigo, nome_bonito in TipoSangue.choices:
+        # Filtramos pelo CÓDIGO (que é o que está guardado na base de dados)
+        dadores = Dador.objects.filter(tipo_sangue=codigo)
+        dadores_por_grupo[nome_bonito] = dadores
+            
+    return render(request, 'dadores_tipo_sangue.html', {
+        'grupos_sangue': dadores_por_grupo,
+        'titulo': "Dadores por Tipo de Sangue"
+    })
+
+def dadores_apenas_ativos(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+    
+    dadores = Dador.objects.filter(ativo=True)
+    return render(request, 'dadores_apenas_ativos.html', {
+        'entidades': dadores,
+        'titulo': "Dadores registados que estão ativos",
+        'tipo_entidade': 'dadores' 
+    })
+
+def dadores_idade_minima(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+
+    hoje = date.today()
+    data_limite = date(hoje.year - 18, hoje.month, hoje.day)
+    dadores = Dador.objects.filter(dataNascimento__lte=data_limite)
+
+    return render(request, 'dadores_idade_minima.html', {
+        'entidades': dadores,
+        'titulo': "Dadores registados com idade mínima",
+        'tipo_entidade': 'dadores' 
+    })
+>>>>>>> 162976c0ac009d9ec4f9f630ee44e6fc8ae47c4e

@@ -166,6 +166,26 @@
             text-decoration: underline;
         }
 
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
         @media (max-width: 900px) {
             .actions {
                 grid-template-columns: 1fr;
@@ -187,7 +207,7 @@
     <main class="content">
 
         <div class="header">
-            <h1>Gestão de Dadores</h1>
+            <h1>Listar dadores</h1>
             <div class="user">👤 {{ request.user.username }}</div>
         </div>
 
@@ -196,20 +216,21 @@
             <div class="action-box">
                 <h3>Menu</h3>
                 <p>Escolha o que pretende fazer:</p>
-                <a href="{% url 'registar_dador' %}"> Registar novo dador</a>
-                <a href="{% url 'consultar_dador' %}"> Consultar dador</a>
-                <a href="{% url 'atualizar_informacao' %}"> Atualizar informação</a>
-                <a href="{% url 'desativar_dador' %}"> Desativar dador</a>
-                <a href="{% url 'ativar_dador' %}"> Ativar dador</a>
-                <a href="{% url 'listar_dadores' %}"> Listar dadores</a>
+                <a href="{% url 'dadores_tipo_sangue' %}"> Por tipo sanguíneo</a>
+                <a href="{% url 'dadores_apenas_ativos' %}"> Apenas dadores ativos</a>
+                <a href="{% url 'dadores_idade_minima' %}"> Por idade mínima</a>
             </div>
         </section>
 
-        <div class="logout">
-            <a href="{% url 'logout' %}">⏻ Sair e Guardar Sessão</a>
-        </div>
+        <section class="actions">
+        </section>
 
-    </main>
+   <div class="footer">
+       <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+       <span class="badge">Posto de Sangue</span>
+   </div>
+
+</main>
 </div>
 
 </body>

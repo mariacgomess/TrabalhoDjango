@@ -9,9 +9,9 @@ from .models import (
 @admin.register(Dador)
 class DadorAdmin(admin.ModelAdmin):
     # Colunas que aparecem na lista de dadores
-    list_display = ('nome', 'nif', 'tipo', 'peso', 'ativo', 'ultimaDoacao')
+    list_display = ('nome', 'nif', 'tipo_sangue', 'peso', 'ativo', 'ultimaDoacao')
     # Filtros rápidos na barra lateral
-    list_filter = ('tipo', 'ativo', 'genero', 'banco')
+    list_filter = ('tipo_sangue', 'ativo', 'genero', 'banco')
     # Barra de pesquisa para encontrar dadores rapidamente
     search_fields = ('nome', 'nif')
     # Organização por data
