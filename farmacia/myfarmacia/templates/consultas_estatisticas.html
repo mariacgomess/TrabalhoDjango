@@ -77,6 +77,26 @@
             transition: 0.3s;
         }
         .btn-action:hover { background: #555; transform: translateY(-2px); }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
     </style>
 </head>
 
@@ -133,6 +153,11 @@
             <a href="{% url 'historico_tipo_sanguineo' %}" class="btn-action">
                 Consultar por Tipo de Sangue
             </a>
+        </div>
+
+        <div class="footer">
+            <a href="{% url 'pagina_posto' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
         </div>
 
 </div>
