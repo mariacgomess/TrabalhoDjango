@@ -418,26 +418,50 @@ def atualizar_hospital(request):
         messages.error(request, "Acesso negado.")
         return redirect('home')
     
-    # Obtemos o hospital associado ao utilizador logado
-    perfil_hospital = getattr(request.user, 'perfilhospital', None)
-    if not perfil_hospital:
-        messages.error(request, "Perfil de hospital não encontrado.")
-        return redirect('home')
+    # IMPORTANTE: Mude de 'perfilhospital' para 'perfil_hospital' 
+    # para coincidir com o related_name do seu models.py
+    perfil_hospital = getattr(request.user, 'perfil_hospital', None)
     
-    hospital = perfil_hospital.hospital
+    hospital = None
+    if perfil_hospital:
+        hospital = perfil_hospital.hospital
+    else:
+        # Se entrar aqui, é porque o utilizador logado não tem um PerfilHospital criado no Admin
+        messages.warning(request, "Este utilizador não tem um hospital associado.")
 
     if request.method == 'POST':
-        form = HospitalForm(request.POST, instance=hospital)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "As informações do hospital foram atualizadas com sucesso!")
-            return redirect('pagina_hospital')  # ou outra página de sucesso
+        if hospital:
+            form = HospitalForm(request.POST, instance=hospital)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Informações atualizadas com sucesso!")
+                return redirect('pagina_hospital')
+        else:
+            form = None
     else:
-        form = HospitalForm(instance=hospital)
+        form = HospitalForm(instance=hospital) if hospital else None
 
     return render(request, 'atualizar_hospital.html', {
+        'hospital': hospital,
         'form': form,
-        'hospital': hospital
+        'titulo': "Atualizar Informações do Hospital"
     })
+
+@login_required
+def consultar_hospital(request):
+    if request.user.tipo != 'hospital':
+        messages.error(request, "Acesso negado.")
+        return redirect('home')
+
+    # Usa o related_name 'perfil_hospital' definido no models.py
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital = perfil.hospital if perfil else None
+
+    # Certifique-se que o nome do .html aqui é igual ao nome do ficheiro na pasta
+    return render(request, 'consultar_hospital.html', {
+        'hospital': hospital,
+        'titulo': "Informações da Instituição"
+    })
+
 
 

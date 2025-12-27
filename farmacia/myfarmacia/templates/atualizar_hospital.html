@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Atualizar Hospital | Banco de Sangue</title>
+
     <style>
-        /* Aqui podes copiar todo o teu CSS do dashboard que já tens */
-        body { font-family: "Segoe UI", Tahoma, sans-serif; background: #f4f6f9; color: #333; }
+        body { font-family: "Segoe UI", Tahoma, sans-serif; background: #f4f6f9; margin:0; }
         .layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: linear-gradient(180deg, #7a1c1c, #4d0f0f); color: white; padding: 25px 20px; }
-        .sidebar h2 { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 15px; }
-        .content { flex: 1; padding: 30px 40px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header h1 { color: #7a1c1c; }
-        .user { background: #eee; padding: 8px 14px; border-radius: 20px; font-size: 14px; }
-        .card, .action-box { background: white; border-radius: 14px; padding: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
-        button { background:#7a1c1c; color:white; padding:10px 20px; border:none; border-radius:6px; cursor:pointer; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #7a1c1c, #4d0f0f); color: white; padding: 25px; }
+        .sidebar h2 { text-align: center; }
+        .content { flex: 1; padding: 40px; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .card { background: white; padding: 25px; border-radius: 14px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); }
+        form { display: flex; flex-direction: column; gap: 15px; }
+        input, select { padding: 8px; border-radius: 6px; border: 1px solid #ccc; width: 100%; }
+        button { background: #7a1c1c; color: white; padding: 10px; border: none; border-radius: 6px; cursor: pointer; width: 150px; }
+        button:hover { background: #5f1414; }
     </style>
 </head>
 <body>
+
 <div class="layout">
     <aside class="sidebar">
         <h2>Banco de Sangue</h2>
@@ -30,14 +32,21 @@
         </div>
 
         <div class="card">
-            <h3>Atualizar Informações</h3>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit">Guardar Alterações</button>
-            </form>
+            <h2>Atualizar Informações do Hospital</h2>
+
+            {% if form %}
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">Guardar Alterações</button>
+                </form>
+            {% else %}
+                <p>Hospital não encontrado ou perfil não criado.</p>
+            {% endif %}
+
         </div>
     </main>
 </div>
+
 </body>
 </html>

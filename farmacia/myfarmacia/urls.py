@@ -17,6 +17,7 @@ urlpatterns = [
     path('hospital/', views.pagina_hospital, name='pagina_hospital'),
     path('hospital/gestao_hospital/',views.gestao_hospital, name='gestao_hospital'),
     path('hospital/gestao_hospital/atualizar_hospital/',views.atualizar_hospital, name='atualizar_hospital'),
+    path('hospital/gestao_hospital/consultar_hospital/',views.consultar_hospital, name='consultar_hospital'),
     path('hospital/gestao_pedidos/', views.gestao_pedidos, name='gestao_pedidos'),
 
     path("logout/", views.logout_view, name="logout"),
