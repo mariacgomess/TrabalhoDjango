@@ -229,6 +229,13 @@ def gestao_hospital(request):
 
 def gestao_pedidos(request):
     return render(request, 'gestao_pedidos')
+<<<<<<< HEAD
+=======
+
+def registar_dador(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+>>>>>>> 65044ca3ac654bf1cfede5dd2ee8dc8a823d50b7
 
 def registar_dador(request):
     if request.method == 'POST':
@@ -389,3 +396,16 @@ def dadores_apenas_ativos(request):
     })
 
 
+<<<<<<< HEAD
+=======
+    hoje = date.today()
+    data_limite = date(hoje.year - 18, hoje.month, hoje.day)
+    dadores = Dador.objects.filter(dataNascimento__lte=data_limite)
+
+    return render(request, 'dadores_idade_minima.html', {
+        'entidades': dadores,
+        'titulo': "Dadores registados com idade mínima",
+        'tipo_entidade': 'dadores' 
+    })
+
+>>>>>>> 65044ca3ac654bf1cfede5dd2ee8dc8a823d50b7
