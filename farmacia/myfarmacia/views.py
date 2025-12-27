@@ -7,6 +7,9 @@ from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, Doac
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
 from datetime import date
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count
 
 # --- Navegação Base ---
 def home(request):
@@ -230,8 +233,33 @@ def gestao_doacoes(request):
     return render(request, 'gestao_doacoes.html')
 
 def consultas_estatisticas(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'consultas_estatisticas.html')
+    # Total no último ano (365 dias)
+    um_ano_atras = timezone.now() - timedelta(days=365)
+    total_ano = Doacao.objects.filter(data__gte=um_ano_atras).count()
+
+    # Totais Gerais
+    total_geral = Doacao.objects.count()
+    total_dadores = Dador.objects.filter(ativo=True).count()
+
+    # Válidas vs Inválidas
+    total_validas = Doacao.objects.filter(valido=True).count()
+    
+    # Agrupamento por Tipo de Sangue- Isto cria uma lista: [{'dador__tipo_sangue': 'A+', 'total': 15}, {'dador__tipo_sangue': 'O-', 'total': 3}]
+    por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id')).order_by('dador__tipo_sangue')
+    for item in por_tipo:
+        if total_geral > 0:
+            item['percentagem'] = round((item['qtd'] / total_geral) * 100, 1)
+        else:
+            item['percentagem'] = 0
+
+    return render(request, 'consultas_estatisticas.html', {
+        'total_ano': total_ano,
+        'total_geral': total_geral,
+        'total_dadores': total_dadores,
+        'total_validas': total_validas,
+        'por_tipo': por_tipo,
+        'titulo': "Estatísticas e Consultas"
+    })
 
 
 
