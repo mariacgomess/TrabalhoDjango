@@ -94,7 +94,7 @@
         <form method="GET" class="search-box">
             <label for="tipo" style="font-weight: bold;">Filtrar por Grupo:</label>
             
-            <select name="tipo" id="tipo" required>
+            <select name="tipo_sangue" id="tipo_sangue" required>
                 <option value="" disabled selected>Selecione o tipo de sangue...</option>
                 <option value="A+" {% if tipo_pesquisa == 'A+' %}selected{% endif %}>A+</option>
                 <option value="A-" {% if tipo_pesquisa == 'A-' %}selected{% endif %}>A-</option>
@@ -117,31 +117,43 @@
             {% endfor %}
         {% endif %}
     
-        {% if doacoes %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Data</th>
-                        <th>Dador</th> <th>NIF</th>
-                        <th>Componente</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for d in doacoes %}
-                    <tr>
-                        <td>{{ d.data|date:"d/m/Y" }}</td>
-                        <td>{{ d.dador.nome }}</td>
-                        <td>{{ d.dador.nif }}</td>
-                        <td>{{ d.componente|capfirst }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            
-            <div style="margin-top: 15px; text-align: right; color: #777; font-size: 14px;">
-                Total encontrado: <strong>{{ doacoes|length }}</strong>
-            </div>
-        {% endif %}
+        {% if tipo_pesquisa %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Dador</th>
+                    <th>NIF</th>
+                    <th>Componente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in doacoes %}
+                <tr>
+                    <td>{{ d.data|date:"d/m/Y" }}</td>
+                    <td>{{ d.dador.nome }}</td>
+                    <td>{{ d.dador.nif }}</td>
+                    <td>{{ d.componente|capfirst }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px; color: #888;">
+                        Não existem doações registadas para o tipo sanguíneo <strong>{{ tipo_pesquisa }}</strong>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 15px; text-align: right; color: #777; font-size: 14px;">
+            Total encontrado: <strong>{{ doacoes|length }}</strong>
+        </div>
+
+    {% else %}
+        <div style="text-align: center; padding: 30px; color: #999;">
+            Selecione um tipo sanguíneo e clique em <strong>Pesquisar</strong>.
+        </div>
+    {% endif %}
     
         <div class="footer">
             <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
