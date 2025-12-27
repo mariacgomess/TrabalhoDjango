@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -30,10 +31,23 @@ class Dador(models.Model):
     genero = models.CharField(max_length = 50)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     telefone = models.CharField(max_length=9)
-    tipo = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
+    tipo_sangue = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     ativo = models.BooleanField(default=True)
-    ultimaDoacao = models.DateField()
+    ultimaDoacao = models.DateField(null=True, blank=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='dadores')
+    
+    @property
+    def idade(self):
+        if self.dataNascimento:
+            today = date.today()
+            # Calcula a diferença de anos
+            age = today.year - self.dataNascimento.year
+            
+            # Verifica se já fez anos este ano. Se não, subtrai 1.
+            if (today.month, today.day) < (self.dataNascimento.month, self.dataNascimento.day):
+                age -= 1
+            return age
+        return None # Retorna nada se não tiver data de nascimento
     
     def __str__(self):
         return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"

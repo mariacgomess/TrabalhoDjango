@@ -18,4 +18,13 @@ urlpatterns = [
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
     path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),
     path("posto/consultas_estatisticas/", views.consultas_estatisticas, name="consultas_estatisticas"),
+    path("posto/gestao_dadores/registar_dador/", views.registar_dador, name="registar_dador"),
+    path("posto/gestao_dadores/consultar_dador/", views.consultar_dador, name="consultar_dador"),
+    path("posto/gestao_dadores/atualizar_informacao/", views.atualizar_informacao, name="atualizar_informacao"),
+    path("posto/gestao_dadores/desativar_dador/", views.desativar_dador, name="desativar_dador"),
+    path("posto/gestao_dadores/ativar_dador/", views.ativar_dador, name="ativar_dador"),
+    path("posto/gestao_dadores/listar_dadores/", views.listar_dadores, name="listar_dadores"),
+    path("posto/gestao_dadores/listar_dadores/dadores_tipo_sangue/", views.dadores_tipo_sangue, name="dadores_tipo_sangue"),
+    path("posto/gestao_dadores/listar_dadores/dadores_apenas_ativos/", views.dadores_apenas_ativos, name="dadores_apenas_ativos"),
+    path("posto/gestao_dadores/listar_dadores/dadores_idade_minima/", views.dadores_idade_minima, name="dadores_idade_minima")
 ]

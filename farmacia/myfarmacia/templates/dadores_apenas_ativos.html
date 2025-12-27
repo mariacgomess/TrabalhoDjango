@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Entidades | Banco de Sangue</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #7a1c1c;
+            border-bottom: 2px solid #7a1c1c;
+            padding-bottom: 12px;
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        thead tr {
+            background-color: #7a1c1c;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .info-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>{{ titulo }}</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Idade</th>
+                <th>NIF</th>
+                <th>Género</th>
+                <th>Telefone</th>
+                <th>Tipo de Sangue</th>
+                <th>Ultima Doação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in dadores %}
+            <tr>
+                <td style="font-weight: bold;">{{ d.nome }}</td>
+                <td class="info-cell">
+                    {% if d.idade %}<span>{{ d.nif }}</span>{{ d.genero }}</span>{{ d.telefone }}</span>{{ d.tipo }}</span>{{ d.ultimaDoacao }}</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="padding: 20px; text-align: center; color: #777;">
+                    Nenhum registo encontrado.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <a href="{% url 'listar_dadores' %}">← Voltar</a>
+        <span class="badge">Posto de Sangue</span>
+    </div>
+</div>
+
+</body>
+</html>
