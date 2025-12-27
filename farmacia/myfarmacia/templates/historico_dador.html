@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #7a1c1c;
+            border-bottom: 2px solid #7a1c1c;
+            padding-bottom: 10px;
+            font-weight: normal;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        thead {
+            background: #7a1c1c;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        th:last-child,
+        td:last-child {
+            text-align: right;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        .container-history {
+        max-width: 800px;
+        margin: 40px auto;
+        background: white;
+        padding: 35px;
+        border-radius: 14px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
+
+    /* Títulos e Layout */
+    h2 {
+        margin-top: 0;
+        color: #333;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 15px;
+    }
+
+    /* Barra de Pesquisa */
+    .search-box {
+        display: flex; 
+        gap: 10px; 
+        margin-bottom: 30px;
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    /* Tabela Limpa (Sem vermelho) */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    
+    thead {
+        background: transparent;
+        color: #333;
+        border-bottom: 2px solid #7a1c1c; /* Linha fina elegante */
+    }
+
+    th, td { padding: 14px 16px; text-align: left; }
+    tbody tr { border-bottom: 1px solid #eee; }
+
+    /* Info do Dador */
+    .dador-info {
+        background: #eef2f7;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #7a1c1c;
+    }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-history">
+    <h2>{{ titulo }}</h2>
+
+    <form method="GET" class="search-box">
+        <input type="text" name="nif" value="{{ nif_pesquisa|default:'' }}" 
+               placeholder="Insira o NIF do dador..." 
+               style="flex-grow: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <button type="submit" style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+            Pesquisar
+        </button>
+    </form>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div style="padding: 15px; background: #ffebee; color: #c62828; border-radius: 4px; margin-bottom: 20px;">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if dador %}
+        
+        <div class="dador-info">
+            <strong>Dador:</strong> {{ dador.nome }} <br>
+            <strong>Grupo Sanguíneo:</strong> {{ dador.tipo_sangue }}
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data da Doação</th>
+                    <th>Componente</th>
+                    <th>Validade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in doacoes %}
+                <tr>
+                    <td>{{ d.data|date:"d/m/Y" }}</td>
+                    <td>{{ d.componente|capfirst }}</td>
+                    <td>
+                        {% if d.valido %}
+                            <span style="color: green; font-weight: bold;">Válida</span>
+                        {% else %}
+                            <span style="color: #999;">Expirada/Inválida</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3" style="text-align: center; padding: 30px; color: #777;">
+                            Este dador ainda não fez nenhuma doação.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    
+        <div class="footer">
+            <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
+        </div>
+    </div>
+</body>
+</html>

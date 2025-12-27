@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador
+from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador, Doacao
 
 # Formulário para criar a conta de login
 class CriarUtilizadorForm(UserCreationForm):
@@ -55,3 +55,45 @@ class DadorForm(forms.ModelForm):
             raise forms.ValidationError("Este NIF já se encontra registado no sistema.")
             
         return nif
+    
+class DoacaoForm(forms.ModelForm):
+    # Criamos um campo extra que NÃO existe no modelo Doacao
+    nif_dador = forms.CharField(
+        label="NIF do Dador",
+        max_length=9,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: 123456789'})
+    )
+
+    class Meta:
+        model = Doacao
+        # REMOVEMOS o campo 'dador' desta lista para não aparecer o dropdown
+        fields = ["nif_dador", "componente", "posto", "banco"] # Podes adicionar data/hora se precisares
+
+    # Validar se o NIF existe e se o dador é válido
+    def clean_nif_dador(self):
+        nif = self.cleaned_data.get('nif_dador')
+        
+        # Tenta encontrar o dador na BD
+        try:
+            dador = Dador.objects.get(nif=nif)
+        except Dador.DoesNotExist:
+            raise forms.ValidationError("Não existe nenhum dador registado com esse NIF.")
+
+        # Verifica se o dador está ativo
+        if not dador.ativo:
+            raise forms.ValidationError(f"O dador {dador.nome} está inativo e não pode doar.")
+
+        # Se tudo estiver bem, devolvemos o OBJETO Dador
+        return dador
+
+    # Sobrescrever o Save para ligar as peças
+    def save(self, commit=True):
+        # Cria a doação na memória mas não grava ainda (commit=False)
+        doacao = super().save(commit=False)
+        
+        # Vamos buscar o Dador que encontrámos na função clean_nif_dador e associamos à doação manualmente
+        doacao.dador = self.cleaned_data['nif_dador']
+
+        if commit:
+            doacao.save()
+        return doacao

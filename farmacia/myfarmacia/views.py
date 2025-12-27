@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
 from datetime import date
@@ -440,4 +440,60 @@ def atualizar_hospital(request):
         'hospital': hospital
     })
 
+def registar_doacao(request):
+    if request.method == 'POST':
+        doacao_form = DoacaoForm(request.POST)
+        if doacao_form.is_valid():
+            doacao_criado = doacao_form.save()
+            
+            messages.success(request, f"Doação criada com sucesso!")
+            return redirect('gestao_doacoes')
+    else:
+        doacao_form = DoacaoForm()
 
+    return render(request, 'registar_doacao.html', {
+        'entidade_form': doacao_form,
+        'titulo': "Registar Nova Doação"
+    })
+
+def historico_dador(request):
+    dador_encontrado = None
+    lista_doacoes = []
+    search_nif = request.GET.get('nif')
+
+    if search_nif:
+        try:
+            dador_encontrado = Dador.objects.get(nif=search_nif)
+            lista_doacoes = Doacao.objects.filter(dador=dador_encontrado).order_by('-data')
+        except Dador.DoesNotExist:
+            messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
+
+    return render(request, 'historico_dador.html', {
+        'dador': dador_encontrado,
+        'doacoes': lista_doacoes,
+        'nif_pesquisa': search_nif,
+        'titulo': "Histórico de Doações"
+    })
+
+def historico_tipo_sanguineo(request):
+    lista_doacoes = []
+    search_tipo = request.GET.get('tipo_sangue')
+
+    if search_tipo:
+        lista_doacoes = Doacao.objects.filter(dador__tipo_sangue=search_tipo).order_by('-data')
+        if not lista_doacoes.exists():
+            messages.warning(request, f"Não existem doações registadas para o tipo '{search_tipo}'.")
+
+    return render(request, 'historico_tipo_sanguineo.html', {
+        'doacoes': lista_doacoes,
+        'tipo_pesquisa': search_tipo,
+        'titulo': "Histórico por Tipo Sanguíneo"
+    })
+
+def consultar_doacoes(request):
+    doacoes = Doacao.objects.all().order_by('-data')
+
+    return render(request, 'consultar_doacoes.html', {
+        'doacoes': doacoes,
+        'titulo': "Consultar doações"
+    })

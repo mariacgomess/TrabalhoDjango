@@ -55,7 +55,7 @@ class Dador(models.Model):
 class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
-    PLASMA = "plasma", "plasma"
+    PLASMA = "plasma", "Plasma"
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)
@@ -68,7 +68,7 @@ class PostoRecolha(models.Model):
     
 
 class Doacao(models.Model):
-    data = models.DateField()
+    data = models.DateField(auto_now_add=True)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     valido = models.BooleanField(default=True)
     dador = models.ForeignKey(Dador, on_delete=models.DO_NOTHING, related_name='doacoes')

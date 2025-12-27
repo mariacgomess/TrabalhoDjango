@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+    /* Fundo geral da página para destacar o cartão */
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding-top: 50px;
+        min-height: 80vh;
+    }
+
+    /* O Cartão Branco */
+    .register-card {
+        background: white;
+        width: 100%;
+        max-width: 500px; /* Largura máxima igual à da imagem */
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border-top: 5px solid #a83232; /* Topo vermelho */
+    }
+
+    .register-card h2 {
+        color: #a83232;
+        text-align: center;
+        margin-bottom: 30px;
+        font-weight: normal;
+    }
+
+    .section-title {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
+    /* Estilo dos Inputs */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+        font-size: 14px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box; /* Garante que o padding não estraga a largura */
+        font-size: 14px;
+    }
+
+    input:focus {
+        border-color: #a83232;
+        outline: none;
+    }
+
+    .help-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+
+    .help-text ul {
+        padding-left: 20px;
+        margin: 5px 0;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background-color: #a83232;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+    .btn-submit:hover {
+        background-color: #8c2828;
+    }
+    
+    .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <h2>{{ titulo }}</h2>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="section-title">Dados da doação</div>
+
+            {% for field in entidade_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                    {% for error in field.errors %}
+                        <p style="color: red; font-size: 12px;">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-submit">Registar Doação</button>
+        </form>
+    </div>
+</div>
+
+<div class="footer">
+    <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
+    <span class="badge">Posto de Sangue</span>
+</div>
+
+{% endblock %}
