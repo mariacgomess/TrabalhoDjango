@@ -229,7 +229,7 @@ def gestao_hospital(request):
 
 def gestao_pedidos(request):
     return render(request, 'gestao_pedidos')
-=======
+
 def registar_dador(request):
     if request.user.tipo != 'posto':
         return redirect('gestao_dadores')
@@ -308,4 +308,4 @@ def dadores_idade_minima(request):
         'titulo': "Dadores registados com idade mínima",
         'tipo_entidade': 'dadores' 
     })
->>>>>>> 162976c0ac009d9ec4f9f630ee44e6fc8ae47c4e
+
