@@ -203,7 +203,7 @@ def listar_hospitais(request):
     hospitais = Hospital.objects.all()
     return render(request, 'listar_entidades.html', {
         'entidades': hospitais,
-        'titulo': "Hospitais Registados",
+        'titulo': "Hospitais Registados ",
         'tipo_entidade': 'hospital' 
     })
 
@@ -271,12 +271,12 @@ def gestao_pedidos(request):
     return render(request, 'gestao_pedidos')
 
 
+
 def registar_dador(request):
     if request.user.tipo != 'posto':
-        return redirect('gestao_dadores')
-
-
-def registar_dador(request):
+        messages.error(request, "Acesso negado. Apenas funcionários de Postos podem registar dadores.")
+        return redirect('gestao_dadores') 
+    
     if request.method == 'POST':
         dador_form = DadorForm(request.POST)
         if dador_form.is_valid():
@@ -490,7 +490,15 @@ def consultar_hospital(request):
         'titulo': "Informações da Instituição"
     })
 
+@login_required
 def registar_doacao(request):
+    if request.user.tipo != 'posto':
+        messages.error(request, "Acesso negado.")
+        return redirect('home') 
+    
+    # Inicializamos a variável como None para evitar o erro de "not defined"
+    doacao_criada = None 
+
     if request.method == 'POST':
         doacao_form = DoacaoForm(request.POST)
         if doacao_form.is_valid():
@@ -499,15 +507,36 @@ def registar_doacao(request):
             dador.ultimaDoacao = timezone.now().date()
             dador.save()
             doacao_criado = doacao_form.save()
+            ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
+
             
-            messages.success(request, f"Doação criada com sucesso!")
+            if ultima:
+                hoje = date.today()
+     
+                dias_passados = (hoje - ultima.data).days
+                intervalo = 120 if dador.genero == 'Feminino' else 90
+
+                if dias_passados < intervalo:
+                    proxima_data = ultima.data + timedelta(days=intervalo)
+                    messages.error(request, f"O dador {dador.nome} ainda não pode doar. Próxima data possível: {proxima_data}")
+                    return render(request, 'registar_doacao.html', {
+                        'entidade_form': doacao_form,
+                        'titulo': "Registar Nova Doação"
+                    })
+            
+            doacao_criada = doacao_form.save()
+            
+            messages.success(request, f"Doação de {dador.nome} registada com sucesso!")
             return redirect('gestao_doacoes')
+        else:
+            messages.error(request, "Erro ao validar os dados do formulário.")
     else:
         doacao_form = DoacaoForm()
 
     return render(request, 'registar_doacao.html', {
         'entidade_form': doacao_form,
-        'titulo': "Registar Nova Doação"
+        'titulo': "Registar Nova Doação",
+        'doacao': doacao_criada  # Passamos a variável (mesmo que seja None)
     })
 
 def historico_dador(request):
