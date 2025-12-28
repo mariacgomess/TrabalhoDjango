@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+
+    <style>
+        /* Contentor Principal */
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+    
+        h2 { color: #333; border-bottom: 1px solid #ddd; padding-bottom: 15px; margin-bottom: 30px; }
+    
+        /* GRELHA DE CARTÕES (KPIs) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+    
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+    
+        .card h3 { margin: 0; font-size: 36px; color: #7a1c1c; }
+        .card p { margin: 5px 0 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+    
+        /* DESTAQUE PARA O OBRIGATÓRIO */
+        .card.highlight {
+            border: 2px solid #7a1c1c;
+            background: #fff5f5;
+        }
+    
+        /* BARRA DE PROGRESSO (Visualização de Tipos) */
+        .types-section {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+    
+        .type-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+    
+        .type-label { width: 50px; font-weight: bold; color: #333; }
+        .type-bar-bg { flex-grow: 1; background: #eee; height: 10px; border-radius: 5px; margin: 0 15px; }
+        .type-bar-fill { background: #7a1c1c; height: 10px; border-radius: 5px; min-width: 5px; }
+        .type-count { width: 30px; text-align: right; color: #555; }
+    
+        /* BOTÕES DE ACESSO RÁPIDO */
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+    
+        .btn-action {
+            flex: 1;
+            padding: 15px;
+            background: #333;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-action:hover { background: #555; transform: translateY(-2px); }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <h2>{{ titulo }}</h2>
+    
+        <div class="stats-grid">
+            <div class="card highlight">
+                <h3>{{ total_ano }}</h3>
+                <p>Doações (Últimos 365 dias)</p>
+            </div>
+    
+            <div class="card">
+                <h3>{{ total_geral }}</h3>
+                <p>Total de Doações</p>
+            </div>
+    
+            <div class="card">
+                <h3>{{ total_dadores }}</h3>
+                <p>Dadores Ativos</p>
+            </div>
+    
+            <div class="card">
+                <h3>{{ total_validas }}</h3>
+                <p>Doações Válidas</p>
+            </div>
+        </div>
+    
+        <div class="types-section">
+            <h3 style="margin-top: 0; color: #333;">Distribuição por Tipo de Sangue</h3>
+            
+            {% for item in por_tipo %}
+            <div class="type-row">
+                <div class="type-label">{{ item.dador__tipo_sangue }}</div>
+
+                <div class="type-bar-fill"
+                    data-width="{{ item.percentagem|default:0 }}"
+                    style="width: 0%;">
+                </div>
+
+                <div class="type-count">{{ item.qtd }}</div>
+            </div>
+            {% empty %}
+            <p style="color: #777;">Ainda não existem dados suficientes.</p>
+            {% endfor %}
+        </div>
+    
+        <div class="quick-actions">
+            <a href="{% url 'historico_dador' %}" class="btn-action">
+                Consultar Histórico por Dador
+            </a>
+            <a href="{% url 'historico_tipo_sanguineo' %}" class="btn-action">
+                Consultar por Tipo de Sangue
+            </a>
+        </div>
+
+        <div class="footer">
+            <a href="{% url 'pagina_posto' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
+        </div>
+
+</div>
+
+</body>
+</html>

@@ -5,35 +5,112 @@
     <title>Login - Banco de Sangue</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: 'Times New Roman', Times, serif;
-            background-color: #f2f2f2;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
         }
 
         header {
-            background-color: rgba(54, 188, 5, 0.395);
-            color: brown;
-            padding: 20px;
+            background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+            color: white;
+            padding: 30px 40px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        header h1 {
+            margin: 0;
+            font-weight: normal;
+        }
+
+        header p {
+            margin: 6px 0 20px 0;
+            opacity: 0.9;
         }
 
         nav a {
-            color: rgb(64, 0, 255);
-            margin-right: 15px;
+            color: white;
+            margin-right: 20px;
             text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            font-size: 15px;
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.15);
         }
 
         .login-box {
-            width: 300px;
-            margin: 60px auto;
+            width: 340px;
+            margin: 80px auto;
             background: white;
-            padding: 20px;
-            border: 1px solid #ccc;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .login-box h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #7a1c1c;
+            font-weight: normal;
+        }
+
+        .login-box label {
+            display: block;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #555;
         }
 
         .login-box input {
             width: 100%;
+            padding: 10px;
+            margin-top: 6px;
             margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        .login-box button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #7a1c1c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .login-box button:hover {
+            background: #5f1414;
+        }
+
+        .login-box ul {
+            padding: 0;
+            margin-bottom: 15px;
+        }
+
+        .login-box li {
+            list-style: none;
+            background: #ffe0e0;
+            color: #7a1c1c;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -52,9 +129,9 @@
     <h2>Login</h2>
 
     {% if messages %}
-        <ul style="padding: 0; margin-bottom: 15px;">
+        <ul>
             {% for message in messages %}
-                <li style="color: red; list-style: none; font-weight: bold;">
+                <li>
                     {{ message }}
                 </li>
             {% endfor %}

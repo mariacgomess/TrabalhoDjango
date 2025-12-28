@@ -2,10 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import TodoItem, Utilizador, Banco, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm
+from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
+from datetime import date
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Count
 
 # --- Navegação Base ---
 def home(request):
@@ -128,9 +132,20 @@ def pagina_hospital(request):
 
 @login_required
 def pagina_posto(request):
+    # Verificação de segurança: usa 'posto' conforme o seu AbstractUser
     if request.user.tipo != 'posto':
+        messages.error(request, "Acesso negado. Apenas postos podem entrar aqui.")
         return redirect('login')
-    return render(request, 'posto.html')
+    
+    # Estatísticas para o Dashboard
+    total_dadores = Dador.objects.count()
+    total_doacoes = Doacao.objects.count()
+
+    context = {
+        'total_dadores': total_dadores,
+        'total_doacoes': total_doacoes,
+    }
+    return render(request, 'posto.html', context)
 
 
 def todos(request):
@@ -208,3 +223,341 @@ def listar_postos(request):
 def logout_view(request):
     django_logout(request) # Usamos o nome que definimos no import
     return redirect('home')
+
+def gestao_dadores(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'gestao_dadores.html')
+
+def gestao_doacoes(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'gestao_doacoes.html')
+
+def consultas_estatisticas(request):
+    # Total no último ano (365 dias)
+    um_ano_atras = timezone.now() - timedelta(days=365)
+    total_ano = Doacao.objects.filter(data__gte=um_ano_atras).count()
+
+    # Totais Gerais
+    total_geral = Doacao.objects.count()
+    total_dadores = Dador.objects.filter(ativo=True).count()
+
+    # Válidas vs Inválidas
+    total_validas = Doacao.objects.filter(valido=True).count()
+    
+    # Agrupamento por Tipo de Sangue- Isto cria uma lista: [{'dador__tipo_sangue': 'A+', 'total': 15}, {'dador__tipo_sangue': 'O-', 'total': 3}]
+    por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id')).order_by('dador__tipo_sangue')
+    for item in por_tipo:
+        if total_geral > 0:
+            item['percentagem'] = round((item['qtd'] / total_geral) * 100, 1)
+        else:
+            item['percentagem'] = 0
+
+    return render(request, 'consultas_estatisticas.html', {
+        'total_ano': total_ano,
+        'total_geral': total_geral,
+        'total_dadores': total_dadores,
+        'total_validas': total_validas,
+        'por_tipo': por_tipo,
+        'titulo': "Estatísticas e Consultas"
+    })
+
+
+
+def gestao_hospital(request):
+    
+    return render(request, 'gestao_hospital.html')
+
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos')
+
+
+def registar_dador(request):
+    if request.user.tipo != 'posto':
+        return redirect('gestao_dadores')
+
+
+def registar_dador(request):
+    if request.method == 'POST':
+        dador_form = DadorForm(request.POST)
+        if dador_form.is_valid():
+            dador_criado = dador_form.save()
+            
+            messages.success(request, f"Dador '{dador_criado.nome}' criado com sucesso!")
+            return redirect('gestao_dadores')
+    else:
+        dador_form = DadorForm()
+
+    return render(request, 'registar_dador.html', {
+        'entidade_form': dador_form,
+        'titulo': "Registar Novo Dador"
+    })
+
+def consultar_dador(request):
+    dador = None
+    search_nif = request.GET.get('nif')
+
+    if search_nif:
+        try:
+            dador = Dador.objects.get(nif=search_nif)
+        except Dador.DoesNotExist:
+            messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
+
+    return render(request, 'consultar_dador.html', {
+        'dador': dador,
+        'titulo': "Dador por NIF"
+    })
+
+def atualizar_informacao(request):
+    dador = None
+    form = None
+    #Verificar se foi feita uma pesquisa (pelo GET do URL)
+    nif_pesquisa = request.GET.get('nif_search')
+
+    if nif_pesquisa:
+        try:
+            # Tenta encontrar o dador pelo NIF
+            dador = Dador.objects.get(nif=nif_pesquisa)
+        except Dador.DoesNotExist:
+            messages.error(request, f"Dador com NIF {nif_pesquisa} não encontrado.")
+            # Se não encontrar, mantemos dador=None
+
+    # Lógica do Formulário (Só ativa se tivermos encontrado um dador)
+    if dador:
+        if request.method == 'POST':
+            # Se carregou em "Gravar Alterações", atualizamos os dados
+            form = DadorForm(request.POST, instance=dador)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f"Dados de {dador.nome} atualizados com sucesso!")
+                return redirect('gestao_dadores') # Ou redireciona para onde quiseres
+        else:
+            # Se acabou de pesquisar, mostramos o formulário preenchido
+            form = DadorForm(instance=dador)
+
+    return render(request, 'atualizar_informacao.html', {
+        'form': form,
+        'dador_encontrado': dador,
+        'nif_pesquisa': nif_pesquisa,
+        'titulo': "Pesquisar e Atualizar Dador"
+    })
+
+def desativar_dador(request):
+    dador = None
+
+    if request.method == 'GET':
+        search_nif = request.GET.get('nif')
+        if search_nif:
+            try:
+                dador = Dador.objects.get(nif=search_nif)
+            except Dador.DoesNotExist:
+                messages.warning(
+                    request,
+                    f"Nenhum dador encontrado com o NIF '{search_nif}'"
+                )
+
+    if request.method == 'POST':
+        nif = request.POST.get('nif')
+        try:
+            dador = Dador.objects.get(nif=nif)
+            dador.ativo = False
+            dador.save()
+
+            messages.success(
+                request,
+                f"O dador {dador.nome} foi desativado com sucesso!"
+            )
+            return redirect('gestao_dadores')
+
+        except Dador.DoesNotExist:
+            messages.error(request, "Erro ao ativar o dador.")
+
+    return render(request, 'desativar_dador.html', {
+        'dador': dador,
+        'titulo': "Desativar Dador"
+    })
+
+def ativar_dador(request):
+    dador = None
+
+    if request.method == 'GET':
+        search_nif = request.GET.get('nif')
+        if search_nif:
+            try:
+                dador = Dador.objects.get(nif=search_nif)
+            except Dador.DoesNotExist:
+                messages.warning(
+                    request,
+                    f"Nenhum dador encontrado com o NIF '{search_nif}'"
+                )
+
+    if request.method == 'POST':
+        nif = request.POST.get('nif')
+        try:
+            dador = Dador.objects.get(nif=nif)
+            dador.ativo = True
+            dador.save()
+
+            messages.success(
+                request,
+                f"O dador {dador.nome} foi ativado com sucesso!"
+            )
+            return redirect('gestao_dadores')
+
+        except Dador.DoesNotExist:
+            messages.error(request, "Erro ao ativar o dador.")
+
+    return render(request, 'ativar_dador.html', {
+        'dador': dador,
+        'titulo': "Ativar Dador"
+    })
+
+def listar_dadores(request):
+    # Lógica futura aqui. Por agora, apenas mostra a página.
+    return render(request, 'listar_dadores.html')
+
+def dadores_tipo_sangue(request):
+    dadores_por_grupo = {}
+    for codigo, nome_bonito in TipoSangue.choices:
+        # Filtramos pelo CÓDIGO (que é o que está guardado na base de dados)
+        dadores = Dador.objects.filter(tipo_sangue=codigo)
+        dadores_por_grupo[nome_bonito] = dadores
+            
+    return render(request, 'dadores_tipo_sangue.html', {
+        'grupos_sangue': dadores_por_grupo,
+        'titulo': "Dadores por Tipo de Sangue"
+    })
+
+def dadores_apenas_ativos(request):
+    dadores_validos = Dador.objects.filter(ativo=True)
+    return render(request, 'dadores_apenas_ativos.html', {
+        'dadores': dadores_validos,  # <--- O HTML PROCURA ESTE NOME 'dadores'
+        'titulo': "Dadores Ativos"
+    })
+
+    hoje = date.today()
+    data_limite = date(hoje.year - 18, hoje.month, hoje.day)
+    dadores = Dador.objects.filter(dataNascimento__lte=data_limite)
+
+    return render(request, 'dadores_idade_minima.html', {
+        'entidades': dadores,
+        'titulo': "Dadores registados com idade mínima",
+        'tipo_entidade': 'dadores' 
+    })
+
+def gestao_hospital(request):
+    
+    return render(request, 'gestao_hospital.html')
+
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos.html')
+
+@login_required
+def atualizar_hospital(request):
+    if request.user.tipo != 'hospital':
+        messages.error(request, "Acesso negado.")
+        return redirect('home')
+    
+    # IMPORTANTE: Mude de 'perfilhospital' para 'perfil_hospital' 
+    # para coincidir com o related_name do seu models.py
+    perfil_hospital = getattr(request.user, 'perfil_hospital', None)
+    
+    hospital = None
+    if perfil_hospital:
+        hospital = perfil_hospital.hospital
+    else:
+        # Se entrar aqui, é porque o utilizador logado não tem um PerfilHospital criado no Admin
+        messages.warning(request, "Este utilizador não tem um hospital associado.")
+
+    if request.method == 'POST':
+        if hospital:
+            form = HospitalForm(request.POST, instance=hospital)
+            if form.is_valid():
+                form.save()
+                messages.success(request, "Informações atualizadas com sucesso!")
+                return redirect('pagina_hospital')
+        else:
+            form = None
+    else:
+        form = HospitalForm(instance=hospital) if hospital else None
+
+    return render(request, 'atualizar_hospital.html', {
+        'hospital': hospital,
+        'form': form,
+        'titulo': "Atualizar Informações do Hospital"
+    })
+
+@login_required
+def consultar_hospital(request):
+    if request.user.tipo != 'hospital':
+        messages.error(request, "Acesso negado.")
+        return redirect('home')
+
+    # Usa o related_name 'perfil_hospital' definido no models.py
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital = perfil.hospital if perfil else None
+
+    # Certifique-se que o nome do .html aqui é igual ao nome do ficheiro na pasta
+    return render(request, 'consultar_hospital.html', {
+        'hospital': hospital,
+        'titulo': "Informações da Instituição"
+    })
+
+def registar_doacao(request):
+    if request.method == 'POST':
+        doacao_form = DoacaoForm(request.POST)
+        if doacao_form.is_valid():
+            doacao_criado = doacao_form.save()
+            
+            messages.success(request, f"Doação criada com sucesso!")
+            return redirect('gestao_doacoes')
+    else:
+        doacao_form = DoacaoForm()
+
+
+    return render(request, 'registar_doacao.html', {
+        'entidade_form': doacao_form,
+        'titulo': "Registar Nova Doação"
+    })
+
+def historico_dador(request):
+    dador_encontrado = None
+    lista_doacoes = []
+    search_nif = request.GET.get('nif')
+
+    if search_nif:
+        try:
+            dador_encontrado = Dador.objects.get(nif=search_nif)
+            lista_doacoes = Doacao.objects.filter(dador=dador_encontrado).order_by('-data')
+        except Dador.DoesNotExist:
+            messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
+
+    return render(request, 'historico_dador.html', {
+        'dador': dador_encontrado,
+        'doacoes': lista_doacoes,
+        'nif_pesquisa': search_nif,
+        'titulo': "Histórico de Doações"
+    })
+
+def historico_tipo_sanguineo(request):
+    lista_doacoes = []
+    search_tipo = request.GET.get('tipo_sangue')
+
+    if search_tipo:
+        lista_doacoes = Doacao.objects.filter(dador__tipo_sangue=search_tipo).order_by('-data')
+        if not lista_doacoes.exists():
+            messages.warning(request, f"Não existem doações registadas para o tipo '{search_tipo}'.")
+
+    return render(request, 'historico_tipo_sanguineo.html', {
+        'doacoes': lista_doacoes,
+        'tipo_pesquisa': search_tipo,
+        'titulo': "Histórico por Tipo Sanguíneo"
+    })
+
+def consultar_doacoes(request):
+    doacoes = Doacao.objects.all().order_by('-data')
+
+    return render(request, 'consultar_doacoes.html', {
+        'doacoes': doacoes,
+        'titulo': "Consultar doações"
+    })
+

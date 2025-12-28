@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Administrador | Banco de Sangue</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+            color: white;
+            padding: 25px 20px;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            text-align: center;
+            font-weight: normal;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 15px;
+        }
+
+        .menu {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .menu a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .menu a:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* ===== MAIN ===== */
+        .content {
+            flex: 1;
+            padding: 30px 40px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #7a1c1c;
+            font-weight: normal;
+        }
+
+        .user {
+            background: #eee;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        /* ===== CARDS ===== */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #7a1c1c;
+            font-weight: normal;
+        }
+
+        .card span {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        /* ===== ACTIONS ===== */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .action-box {
+            background: white;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+
+        .action-box h3 {
+            margin-top: 0;
+            color: #7a1c1c;
+            font-weight: normal;
+        }
+
+        .action-box p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .action-box a {
+            display: block;
+            text-decoration: none;
+            background: #7a1c1c;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .action-box a:hover {
+            background: #5f1414;
+        }
+
+        /* ===== LOGOUT ===== */
+        .logout {
+            margin-top: 40px;
+            text-align: right;
+        }
+
+        .logout a {
+            color: #7a1c1c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .logout a:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+        <h2>Banco de Sangue</h2>
+
+        
+    </aside>
+
+    <main class="content">
+
+        <div class="header">
+            <h1>Listar dadores</h1>
+            <div class="user">👤 {{ request.user.username }}</div>
+        </div>
+
+        <section class="actions">
+
+            <div class="action-box">
+                <h3>Menu</h3>
+                <p>Escolha o que pretende fazer:</p>
+                <a href="{% url 'dadores_tipo_sangue' %}"> Por tipo sanguíneo</a>
+                <a href="{% url 'dadores_apenas_ativos' %}"> Apenas dadores ativos</a>
+            </div>
+        </section>
+
+        <section class="actions">
+        </section>
+
+   <div class="footer">
+       <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+       <span class="badge">Posto de Sangue</span>
+   </div>
+
+</main>
+</div>
+
+</body>
+</html>

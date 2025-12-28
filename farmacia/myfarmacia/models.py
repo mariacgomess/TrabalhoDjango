@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -26,14 +27,27 @@ class TipoSangue(models.TextChoices):
 class Dador(models.Model):
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=12)
+    nif = models.CharField(max_length=12, unique=True)
     genero = models.CharField(max_length = 50)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
-    telefone = models.CharField(max_length=9)
-    tipo = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
+    telefone = models.CharField(max_length=9, unique=True)
+    tipo_sangue = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     ativo = models.BooleanField(default=True)
-    ultimaDoacao = models.DateField()
+    ultimaDoacao = models.DateField(null=True, blank=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='dadores')
+    
+    @property
+    def idade(self):
+        if self.dataNascimento:
+            today = date.today()
+            # Calcula a diferença de anos
+            age = today.year - self.dataNascimento.year
+            
+            # Verifica se já fez anos este ano. Se não, subtrai 1.
+            if (today.month, today.day) < (self.dataNascimento.month, self.dataNascimento.day):
+                age -= 1
+            return age
+        return None # Retorna nada se não tiver data de nascimento
     
     def __str__(self):
         return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"
@@ -41,7 +55,7 @@ class Dador(models.Model):
 class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
-    PLASMA = "plasma", "plasma"
+    PLASMA = "plasma", "Plasma"
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)
@@ -54,7 +68,7 @@ class PostoRecolha(models.Model):
     
 
 class Doacao(models.Model):
-    data = models.DateField()
+    data = models.DateField(auto_now_add=True)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     valido = models.BooleanField(default=True)
     dador = models.ForeignKey(Dador, on_delete=models.DO_NOTHING, related_name='doacoes')

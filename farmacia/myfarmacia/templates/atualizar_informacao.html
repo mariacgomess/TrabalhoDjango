@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #7a1c1c;
+            border-bottom: 2px solid #7a1c1c;
+            padding-bottom: 10px;
+            font-weight: normal;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+        }
+
+        thead {
+            background: #7a1c1c;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        th:last-child,
+        td:last-child {
+            text-align: right;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #7a1c1c;
+            font-weight: bold;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .back:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            background: #eee;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="container" style="max_width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
+    
+            <h2 style="color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 10px;">{{ titulo }}</h2>
+        
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd;">
+                <form method="GET" action="" style="display: flex; gap: 10px; align-items: end;">
+                    <div style="flex-grow: 1;">
+                        <label for="nif_search" style="font-weight: bold; display: block; margin-bottom: 5px;">Introduza o NIF do Dador:</label>
+                        <input type="text" name="nif_search" id="nif_search" value="{{ nif_pesquisa|default:'' }}" 
+                               placeholder="Ex: 123456789" 
+                               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                    </div>
+                    <button type="submit" style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; height: 42px;">
+                        Pesquisar
+                    </button>
+                </form>
+            </div>
+        
+            {% if dador_encontrado and form %}
+                
+                <div style="margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h3 style="color: #7a1c1c;">Editar Dados de: {{ dador_encontrado.nome }}</h3>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div style="margin-bottom: 15px;">
+                            <label style="font-weight: bold; display: block; margin-bottom: 5px;">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div style="color: red; font-size: 12px;">{{ field.errors }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+        
+                        <div style="margin-top: 30px; display: flex; gap: 15px;">
+                            <button type="submit" style="background: #7a1c1c; color: white; border: none; padding: 12px 30px; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold;">
+                                Guardar Alterações
+                            </button>
+                            
+                            <a href="{% url 'atualizar_informacao' %}" style="padding: 12px 20px; text-decoration: none; color: #555; background: #eee; border-radius: 4px; font-weight: bold;">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+        
+            {% endif %}
+        
+            {% if messages %}
+            <div style="margin-top: 20px;">
+                {% for message in messages %}
+                    
+                    {% if 'error' in message.tags %}
+                        <div style="padding: 15px; border-radius: 4px; margin-bottom: 10px; background: #ffebee; color: #c62828; border: 1px solid #c62828;">
+                            {{ message }}
+                        </div>
+        
+                    {% else %}
+                        <div style="padding: 15px; border-radius: 4px; margin-bottom: 10px; background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+        
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        </div>
+    
+        <div class="footer">
+            <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
+        </div>
+    </div>
+</body>
+</html>

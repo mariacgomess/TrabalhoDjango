@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Utilizador, PostoRecolha, Hospital, Banco
+from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador, Doacao
 
 # Formulário para criar a conta de login
 class CriarUtilizadorForm(UserCreationForm):
@@ -19,3 +19,81 @@ class HospitalForm(forms.ModelForm):
     class Meta:
         model = Hospital
         fields = ["nome", "telefone", "morada", "codigoPostal", "banco"]
+
+# Formulário para os dados técnicos do Dador
+class DadorForm(forms.ModelForm):
+    class Meta:
+        model = Dador
+        fields = ["nome", "dataNascimento", "nif", "genero", "peso", "telefone", "tipo_sangue", "banco"]
+        widgets = {
+            'dataNascimento': forms.DateInput(attrs={
+                'type': 'date',     # Isto ativa o calendário do navegador
+                'class': 'form-control' # Opcional: para ficar bonito se usares Bootstrap
+            })
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Se estivermos a EDITAR (já existe um ID/pk)
+        if self.instance and self.instance.pk:
+            # Tornamos o campo "Readonly" (O utilizador vê mas não consegue escrever)
+            self.fields['nif'].widget.attrs['readonly'] = True
+            
+            # Mudamos a cor para cinzento para se perceber que está bloqueado
+            self.fields['nif'].widget.attrs['style'] = 'background-color: #e9ecef; cursor: not-allowed;'
+    
+    def clean_nif(self):
+        nif = self.cleaned_data.get('nif')
+
+        # Se 'self.instance.pk' existir, significa que estamos a EDITAR um dador antigo.
+        if self.instance.pk:
+            # Se é uma edição, devolvemos logo o NIF original do dador.
+            return self.instance.nif
+
+        # --- AQUI É SÓ PARA QUANDO ESTÁS A CRIAR NOVOS ---
+        if Dador.objects.filter(nif=nif).exists():
+            raise forms.ValidationError("Este NIF já se encontra registado no sistema.")
+            
+        return nif
+    
+class DoacaoForm(forms.ModelForm):
+    # Criamos um campo extra que NÃO existe no modelo Doacao
+    nif_dador = forms.CharField(
+        label="NIF do Dador",
+        max_length=9,
+        widget=forms.TextInput(attrs={'placeholder': 'Ex: 123456789'})
+    )
+
+    class Meta:
+        model = Doacao
+        # REMOVEMOS o campo 'dador' desta lista para não aparecer o dropdown
+        fields = ["nif_dador", "componente", "posto", "banco"] # Podes adicionar data/hora se precisares
+
+    # Validar se o NIF existe e se o dador é válido
+    def clean_nif_dador(self):
+        nif = self.cleaned_data.get('nif_dador')
+        
+        # Tenta encontrar o dador na BD
+        try:
+            dador = Dador.objects.get(nif=nif)
+        except Dador.DoesNotExist:
+            raise forms.ValidationError("Não existe nenhum dador registado com esse NIF.")
+
+        # Verifica se o dador está ativo
+        if not dador.ativo:
+            raise forms.ValidationError(f"O dador {dador.nome} está inativo e não pode doar.")
+
+        # Se tudo estiver bem, devolvemos o OBJETO Dador
+        return dador
+
+    # Sobrescrever o Save para ligar as peças
+    def save(self, commit=True):
+        # Cria a doação na memória mas não grava ainda (commit=False)
+        doacao = super().save(commit=False)
+        
+        # Vamos buscar o Dador que encontrámos na função clean_nif_dador e associamos à doação manualmente
+        doacao.dador = self.cleaned_data['nif_dador']
+
+        if commit:
+            doacao.save()
+        return doacao

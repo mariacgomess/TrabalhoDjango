@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+    <style>
+        body { font-family: "Segoe UI", Tahoma, sans-serif; background: #f4f6f9; margin:0; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #7a1c1c, #4d0f0f); color: white; padding: 25px; }
+        .content { flex: 1; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 20px rgba(0,0,0,0.08); max-width: 800px; }
+        .info-item { margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .label { font-weight: bold; color: #7a1c1c; display: block; margin-bottom: 5px; }
+        .value { font-size: 1.1em; color: #333; }
+        .btn-back { display: inline-block; margin-top: 20px; color: #7a1c1c; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2>Banco de Sangue</h2>
+    </aside>
+
+    <main class="content">
+        <h1>{{ titulo }}</h1>
+        
+        <div class="card">
+            {% if hospital %}
+                <div class="info-item">
+                    <span class="label">Nome da Instituição</span>
+                    <span class="value">{{ hospital.nome }}</span> </div>
+                <div class="info-item">
+                    <span class="label">Telefone</span>
+                    <span class="value">{{ hospital.telefone }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Morada</span>
+                    <span class="value">{{ hospital.morada }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Código Postal</span>
+                    <span class="value">{{ hospital.codigoPostal }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Banco de Sangue Vinculado</span>
+                    <span class="value">{{ hospital.banco.nome }}</span>
+                </div>
+            {% else %}
+                <p style="color: red;">Hospital não encontrado ou perfil não associado.</p>
+            {% endif %}
+
+            <a href="{% url 'gestao_hospital' %}" class="btn-back">← Voltar</a>
+        </div>
+    </main>
+</div>
+</body>
+</html>
