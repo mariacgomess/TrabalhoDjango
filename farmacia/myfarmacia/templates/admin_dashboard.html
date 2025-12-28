@@ -171,6 +171,26 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Estilo específico para o botão de exportar (Verde Excel) */
+        .btn-export {
+            display: block;
+            text-decoration: none;
+            background: #28a745 !important; /* Verde */
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px; /* Espaço extra para separar dos outros links */
+            transition: background 0.2s;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .btn-export:hover {
+            background: #218838 !important;
+        }
+
     </style>
 </head>
 
@@ -222,6 +242,10 @@
                 <a href="{% url 'listar_postos' %}"> Listar Postos</a>
                 <a href="{% url 'stock_tipo' %}"> Stock por Tipo</a>
                 <a href="{% url 'stock_componente' %}"> Stock por Componente</a>
+                
+                <a href="{% url 'exportar_stock' %}" class="btn-export">
+                   Exportar Stock Completo (CSV)
+                </a>
             </div>
 
         </section>

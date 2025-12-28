@@ -57,51 +57,29 @@ class Dador(models.Model):
         return None # Retorna nada se não tiver data de nascimento
     
     @property
-    def pode_doar(self):
-        # Vamos buscar o registo real da última doação na tabela Doacao. O '.first()' pega no mais recente porque ordenamos por '-data'
-        ultima_doacao_obj = self.doacoes.order_by('-data').first()
-
-        if not ultima_doacao_obj:
-            return True
-
-        hoje = timezone.now().date()
-        ultimo_tipo = ultima_doacao_obj.componente.lower() # Converter para minúsculas para facilitar
-        ultima_data = ultima_doacao_obj.data
+    def dias_espera_restantes(self):
+        #Calcula quanto tempo falta para poder doar novamente.
+        ultima_doacao = self.doacoes.order_by('-data').first()
+        if not ultima_doacao:
+            return 0
         
-        # --- VERIFICAR INTERVALO DE TEMPO ---
-        intervalo_dias = 0
-        if 'sangue' in ultimo_tipo:
-            intervalo_dias = 90 if self.genero == 'M' else 120
-            
-        elif 'globulos' in ultimo_tipo or 'glóbulos' in ultimo_tipo:
-            intervalo_dias = 180 # 6 meses
-            
-        elif 'plasma' in ultimo_tipo:
-            intervalo_dias = 14 # 2 semanas
-            
-        elif 'plaquetas' in ultimo_tipo:
-            intervalo_dias = 14 
-            
+        hoje = date.today()
+        tipo = ultima_doacao.componente.lower()
+        
+        # Regras de intervalo
+        if 'sangue' in tipo:
+            intervalo = 90 if self.genero == 'M' else 120
+        elif 'plasma' in tipo or 'plaquetas' in tipo:
+            intervalo = 14
         else:
-            # Se for um tipo desconhecido, usamos uma regra segura padrão (3 meses)
-            intervalo_dias = 90
+            intervalo = 180 # Glóbulos
+            
+        dias_passados = (hoje - ultima_doacao.data).days
+        return max(0, intervalo - dias_passados)
 
-        # Calculamos a data em que fica livre
-        data_livre = ultima_data + timedelta(days=intervalo_dias)
-
-        return hoje >= data_livre
-    
-    def save(self, *args, **kwargs):
-        # Verifica a idade usando a propriedade que criámos em cima
-        if self.idade is not None and self.idade < 18:
-            self.ativo = False  # Força inativo se for menor
-        elif not self.pode_doar():
-            self.ativo = False
-        else:
-            self.ativo = True 
-
-        # Grava efetivamente na base de dados
-        super().save(*args, **kwargs)
+    @property
+    def pode_doar(self):
+        return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
     
     def __str__(self):
         return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"

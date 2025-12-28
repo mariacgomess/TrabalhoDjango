@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
+from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital, Pedido, LinhaPedido
 from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
@@ -43,7 +43,6 @@ def login_view(request):
     return render(request, 'login.html')
 
 # --- Painel do Administrador ---
-@login_required
 def pagina_admin(request):
     # Verificação de segurança: usa 'admin' conforme o seu AbstractUser
     if request.user.tipo != 'admin':
@@ -59,8 +58,45 @@ def pagina_admin(request):
         'stock_total': stock_total,
         'total_postos': total_postos,
         'total_hospitais': total_hospitais,
+      
     }
+
+    pedidos_pendentes = Pedido.objects.filter(estado=True).count() # True se pendente
+    context['pedidos_pendentes'] = pedidos_pendentes
+
     return render(request, 'admin_dashboard.html', context)
+
+##extra extra
+import csv
+from django.http import HttpResponse
+
+@login_required
+def exportar_stock_csv(request):
+    if request.user.tipo != 'admin':
+        return redirect('home')
+
+    # Configuração do Response para CSV
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="stock_sangue_{date.today()}.csv"'
+
+    writer = csv.writer(response)
+    # Cabeçalho do ficheiro
+    writer.writerow(['ID Doação', 'Tipo Sangue', 'Componente', 'Data Colheita', 'Dador', 'Posto', 'Banco'])
+
+    # Dados das doações válidas
+    doacoes = Doacao.objects.filter(valido=True)
+    for d in doacoes:
+        writer.writerow([
+            d.id, 
+            d.dador.tipo_sangue, 
+            d.get_componente_display(), 
+            d.data, 
+            d.dador.nome, 
+            d.posto.nome if d.posto else "N/A", 
+            d.banco.nome
+        ])
+
+    return response
 
 # --- Criação de Entidades (Apenas Admin) ---
 @login_required
@@ -160,14 +196,18 @@ def stock_por_tipo(request):
 
     tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
     combinacoes = []
+    valores = []
 
     for t in tipos:
-        total = Doacao.objects.filter(dador__tipo=t, valido=True).count()
+        total = Doacao.objects.filter(dador__tipo_sangue=t, valido=True).count()
         combinacoes.append((t, "Todos os Componentes", total))
+        valores.append(total)
 
     return render(request, 'consultar_stock.html', {
         'titulo': "Stock Total por Grupo Sanguíneo",
-        'combinacoes': combinacoes
+        'combinacoes': combinacoes,
+        'labels': tipos, # As labels são os tipos A+, A-, etc.
+        'valores': valores
     })
 
 @login_required
@@ -179,6 +219,7 @@ def stock_por_componente(request):
     componentes_obrigatorios = ["Sangue", "Plasma", "Globulos Vermelhos"]
     
     combinacoes = []
+    valores = []
 
     for comp in componentes_obrigatorios:
         # Contagem real na base de dados
@@ -187,12 +228,30 @@ def stock_por_componente(request):
         
         # Adicionamos à lista, mesmo que o total seja 0
         combinacoes.append(("Geral", comp, total))
+        valores.append(total)
 
     return render(request, 'consultar_stock.html', {
         'titulo': "Stock Total por Componente",
-        'combinacoes': combinacoes
+        'combinacoes': combinacoes,
+        'labels': componentes_obrigatorios, # As labels aqui são Sangue, Plasma, etc.
+        'valores': valores
     })
 
+@login_required
+def stock_critico(request):
+    if request.user.tipo != 'admin': return redirect('home')
+    
+    # Define um limite (ex: menos de 5 unidades é crítico)
+    limite = 5
+    alertas = []
+    tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+    
+    for t in tipos:
+        total = Doacao.objects.filter(dador__tipo_sangue=t, valido=True).count()
+        if total < limite:
+            alertas.append({'tipo': t, 'quantidade': total})
+            
+    return render(request, 'admin/stock_critico.html', {'alertas': alertas})
 
 
 @login_required
@@ -220,18 +279,25 @@ def listar_postos(request):
     })
 
 
+@login_required
 def logout_view(request):
     django_logout(request) # Usamos o nome que definimos no import
     return redirect('home')
 
+
+@login_required
 def gestao_dadores(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'gestao_dadores.html')
 
+
+@login_required
 def gestao_doacoes(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'gestao_doacoes.html')
 
+
+@login_required
 def consultas_estatisticas(request):
     # Total no último ano (365 dias)
     um_ano_atras = timezone.now() - timedelta(days=365)
@@ -263,15 +329,19 @@ def consultas_estatisticas(request):
 
 
 
+@login_required
 def gestao_hospital(request):
     
     return render(request, 'gestao_hospital.html')
 
+
+@login_required
 def gestao_pedidos(request):
-    return render(request, 'gestao_pedidos')
+    return render(request, 'gestao_pedidos.html')
 
 
 
+@login_required
 def registar_dador(request):
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado. Apenas funcionários de Postos podem registar dadores.")
@@ -292,21 +362,18 @@ def registar_dador(request):
         'titulo': "Registar Novo Dador"
     })
 
+@login_required
 def consultar_dador(request):
     dador = None
     search_nif = request.GET.get('nif')
-
     if search_nif:
-        try:
-            dador = Dador.objects.get(nif=search_nif)
-        except Dador.DoesNotExist:
-            messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
+        dador = Dador.objects.filter(nif=search_nif).first()
+        if not dador:
+            messages.warning(request, f"NIF '{search_nif}' não encontrado.")
+    return render(request, 'consultar_dador.html', {'dador': dador, 'titulo': "Dador por NIF"})
 
-    return render(request, 'consultar_dador.html', {
-        'dador': dador,
-        'titulo': "Dador por NIF"
-    })
 
+@login_required
 def atualizar_informacao(request):
     dador = None
     form = None
@@ -341,6 +408,8 @@ def atualizar_informacao(request):
         'titulo': "Pesquisar e Atualizar Dador"
     })
 
+
+@login_required
 def desativar_dador(request):
     dador = None
 
@@ -376,6 +445,8 @@ def desativar_dador(request):
         'titulo': "Desativar Dador"
     })
 
+
+@login_required
 def ativar_dador(request):
     dador = None
 
@@ -391,13 +462,14 @@ def ativar_dador(request):
         nif = request.POST.get('nif')
         try:
             dador = Dador.objects.get(nif=nif)
+            if dador.idade < 18:
+                messages.error(request, f"Impossível ativar: {dador.nome} ainda é menor de idade ({dador.idade} anos).")
+                return redirect('gestao_dadores')
+            
             dador.ativo = True
             dador.save()
 
-            messages.success(
-                request,
-                f"O dador {dador.nome} foi ativado com sucesso!"
-            )
+            messages.success(request, f"O dador {dador.nome} foi ativado com sucesso!")
             return redirect('gestao_dadores')
 
         except Dador.DoesNotExist:
@@ -408,10 +480,14 @@ def ativar_dador(request):
         'titulo': "Ativar Dador"
     })
 
+
+@login_required
 def listar_dadores(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'listar_dadores.html')
 
+
+@login_required
 def dadores_tipo_sangue(request):
     dadores_por_grupo = {}
     for codigo, nome_bonito in TipoSangue.choices:
@@ -424,6 +500,8 @@ def dadores_tipo_sangue(request):
         'titulo': "Dadores por Tipo de Sangue"
     })
 
+
+@login_required
 def dadores_apenas_ativos(request):
     dadores_validos = Dador.objects.filter(ativo=True)
     return render(request, 'dadores_apenas_ativos.html', {
@@ -432,12 +510,13 @@ def dadores_apenas_ativos(request):
     })
 
 
+
+@login_required
 def gestao_hospital(request):
     
     return render(request, 'gestao_hospital.html')
 
-def gestao_pedidos(request):
-    return render(request, 'gestao_pedidos.html')
+
 
 @login_required
 def atualizar_hospital(request):
@@ -581,3 +660,70 @@ def consultar_doacoes(request):
         'titulo': "Consultar doações"
     })
 
+
+
+################################################################################################
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .serializers import (
+    DadorSerializer, DoacaoSerializer, HospitalSerializer, 
+    PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
+)
+
+# --- VIEWSETS PARA API (REST FRAMEWORK) ---
+
+class BancoViewSet(viewsets.ModelViewSet):
+    queryset = Banco.objects.all()
+    serializer_class = BancoSerializer
+    permission_classes = [IsAuthenticated]
+
+class PostoRecolhaViewSet(viewsets.ModelViewSet):
+    queryset = PostoRecolha.objects.all()
+    serializer_class = PostoRecolhaSerializer
+    permission_classes = [IsAuthenticated]
+
+class DadorViewSet(viewsets.ModelViewSet):
+    queryset = Dador.objects.all()
+    serializer_class = DadorSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Se quiseres filtrar dadores por banco do utilizador logado:
+        user = self.request.user
+        if user.tipo == 'posto':
+            return Dador.objects.filter(banco=user.perfil_posto.posto.banco)
+        return Dador.objects.all()
+
+class DoacaoViewSet(viewsets.ModelViewSet):
+    queryset = Doacao.objects.all()
+    serializer_class = DoacaoSerializer
+    permission_classes = [IsAuthenticated]
+
+class HospitalViewSet(viewsets.ModelViewSet):
+    queryset = Hospital.objects.all()
+    serializer_class = HospitalSerializer
+    permission_classes = [IsAuthenticated]
+
+class PedidoViewSet(viewsets.ModelViewSet):
+    queryset = Pedido.objects.all()
+    serializer_class = PedidoSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        #Hospital só vê os seus pedidos
+        if user.tipo == 'hospital':
+            return Pedido.objects.filter(hospital=user.perfil_hospital.hospital)
+        return Pedido.objects.all()
+
+    def perform_create(self, serializer):
+        # Se for um hospital a criar, associa automaticamente o hospital dele ao pedido
+        if self.request.user.tipo == 'hospital':
+            serializer.save(hospital=self.request.user.perfil_hospital.hospital)
+        else:
+            serializer.save()
+
+class LinhaPedidoViewSet(viewsets.ModelViewSet):
+    queryset = LinhaPedido.objects.all()
+    serializer_class = LinhaPedidoSerializer
+    permission_classes = [IsAuthenticated]

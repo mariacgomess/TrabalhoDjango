@@ -27,9 +27,18 @@ class DadorForm(forms.ModelForm):
         model = Dador
         fields = ["nome", "dataNascimento", "nif", "genero", "peso", "telefone", "tipo_sangue", "banco"]
         widgets = {
+            # Calendário Prático: Ativa o seletor visual de datas do navegador
             'dataNascimento': forms.DateInput(attrs={
-                'type': 'date',     # Isto ativa o calendário do navegador
-                'class': 'form-control' # Opcional: para ficar bonito se usares Bootstrap
+                'type': 'date', 
+                'class': 'form-control',
+                'max': date.today().isoformat() # Impede selecionar datas no futuro
+            }),
+            # Peso Interativo: Aumenta de 0.1 em 0.1 (ex: 70.1, 70.2)
+            'peso': forms.NumberInput(attrs={
+                'step': '0.1', 
+                'min': '0', 
+                'class': 'form-control',
+                'placeholder': 'Ex: 75.5'
             })
         }
     def __init__(self, *args, **kwargs):
@@ -43,26 +52,25 @@ class DadorForm(forms.ModelForm):
             # Mudamos a cor para cinzento para se perceber que está bloqueado
             self.fields['nif'].widget.attrs['style'] = 'background-color: #e9ecef; cursor: not-allowed;'
     
-    # 1. Validação de Idade (Mínimo 18 anos)
-    def clean_dataNascimento(self):
-        data_nasc = self.cleaned_data.get('dataNascimento')
+    def clean(self):
+        cleaned_data = super().clean()
+        data_nasc = cleaned_data.get('dataNascimento')
+        peso = cleaned_data.get('peso')
+
         if data_nasc:
-            hoje = date.today()
-            # Cálculo exato da idade
-            idade = hoje.year - data_nasc.year - ((hoje.month, hoje.day) < (data_nasc.month, data_nasc.day))
+            # Criamos uma instância temporária para usar a @property idade do Model
+            temp_dador = Dador(dataNascimento=data_nasc)
+            idade = temp_dador.idade
+            if temp_dador.idade < 18:
+                self.add_error('dataNascimento', "O dador deve ter pelo menos 18 anos.")
+            if not self.instance.pk and idade > 65:
+                self.add_error('dataNascimento', "A idade máxima para o primeiro registo é 65 anos.")
             
-            if idade < 18:
-                raise forms.ValidationError("O dador deve ter pelo menos 18 anos.")
-            if idade > 65 and not self.instance.pk:
-                raise forms.ValidationError("A idade máxima para o primeiro registo é 65 anos.")
-        return data_nasc
-    
-    # 2. Validação de Peso (Mínimo 50kg)
-    def clean_peso(self):
-        peso = self.cleaned_data.get('peso')
+        
         if peso is not None and peso < 50:
-            raise forms.ValidationError("O dador deve pesar pelo menos 50kg para poder doar sangue.")
-        return peso
+            self.add_error('peso', "O dador deve pesar pelo menos 50kg para poder doar.")
+            
+        return cleaned_data
     
     def clean_nif(self):
         nif = self.cleaned_data.get('nif')
