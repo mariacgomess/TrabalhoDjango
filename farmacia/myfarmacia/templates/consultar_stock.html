@@ -129,4 +129,63 @@
 </div>
 
 </body>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div class="container">
+    <h2>{{ titulo }}</h2>
+
+    <div style="height: 300px; margin-bottom: 40px;">
+        <canvas id="graficoStock"></canvas>
+    </div>
+
+    <table>
+        <tbody>
+            {% for tipo, componente, quantidade in combinacoes %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <a href="{% url 'pagina_admin' %}" class="back">← Voltar ao Painel do Administrador</a>
+        <span class="badge">Banco de Sangue</span>
+    </div>
+</div>
+
+<div id="data-grafico" 
+     data-labels="{{ labels|safe }}" 
+     data-valores="{{ valores|safe }}" 
+     style="display: none;">
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const el = document.getElementById('data-grafico');
+        const labels = JSON.parse(el.getAttribute('data-labels').replace(/'/g, '"'));
+        const valores = JSON.parse(el.getAttribute('data-valores'));
+
+        const ctx = document.getElementById('graficoStock').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Unidades em Stock',
+                    data: valores,
+                    backgroundColor: '#7a1c1c',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                },
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    });
+</script>
 </html>

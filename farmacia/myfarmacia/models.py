@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -24,11 +26,15 @@ class TipoSangue(models.TextChoices):
     O_POSITIVO = "O+", "O positivo"
     O_NEGATIVO = "O-", "O negativo"
 
+class Genero(models.TextChoices):
+    FEMININO = "F", "Feminino"
+    MASCULINO = "M", "Masculino"
+
 class Dador(models.Model):
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=12, unique=True)
-    genero = models.CharField(max_length = 50)
+    nif = models.CharField(max_length=10, unique=True)
+    genero = models.CharField(max_length=3, choices=Genero.choices)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     telefone = models.CharField(max_length=9, unique=True)
     tipo_sangue = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
@@ -47,7 +53,33 @@ class Dador(models.Model):
             if (today.month, today.day) < (self.dataNascimento.month, self.dataNascimento.day):
                 age -= 1
             return age
+        
         return None # Retorna nada se não tiver data de nascimento
+    
+    @property
+    def dias_espera_restantes(self):
+        #Calcula quanto tempo falta para poder doar novamente.
+        ultima_doacao = self.doacoes.order_by('-data').first()
+        if not ultima_doacao:
+            return 0
+        
+        hoje = date.today()
+        tipo = ultima_doacao.componente.lower()
+        
+        # Regras de intervalo
+        if 'sangue' in tipo:
+            intervalo = 90 if self.genero == 'M' else 120
+        elif 'plasma' in tipo or 'plaquetas' in tipo:
+            intervalo = 14
+        else:
+            intervalo = 180 # Glóbulos
+            
+        dias_passados = (hoje - ultima_doacao.data).days
+        return max(0, intervalo - dias_passados)
+
+    @property
+    def pode_doar(self):
+        return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
     
     def __str__(self):
         return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"
@@ -56,6 +88,10 @@ class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
     PLASMA = "plasma", "Plasma"
+<<<<<<< HEAD
+=======
+    PLAQUETAS = "plaquetas", "Plaquetas"
+>>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)
@@ -68,7 +104,7 @@ class PostoRecolha(models.Model):
     
 
 class Doacao(models.Model):
-    data = models.DateField()
+    data = models.DateField(auto_now_add=True)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     valido = models.BooleanField(default=True)
     dador = models.ForeignKey(Dador, on_delete=models.DO_NOTHING, related_name='doacoes')

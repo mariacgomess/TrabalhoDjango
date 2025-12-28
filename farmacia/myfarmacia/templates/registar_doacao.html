@@ -119,10 +119,6 @@
             border-radius: 20px;
             font-size: 13px;
         }
-
-        .has-error input, .has-error select {
-            border: 2px solid #a83232 !important;
-}
 </style>
 
 <div class="register-container">
@@ -132,7 +128,7 @@
         <form method="post">
             {% csrf_token %}
 
-            <div class="section-title">Dados Pessoais</div>
+            <div class="section-title">Dados da doação</div>
 
             {% for field in entidade_form %}
                 <div class="form-group">
@@ -144,13 +140,13 @@
                 </div>
             {% endfor %}
 
-            <button type="submit" class="btn-submit">Registar Dador</button>
+            <button type="submit" class="btn-submit">Registar Doação</button>
         </form>
     </div>
 </div>
 
 <div class="footer">
-    <a href="{% url 'gestao_dadores' %}">← Voltar</a>
+    <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
     <span class="badge">Posto de Sangue</span>
 </div>
 

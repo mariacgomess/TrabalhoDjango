@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+
+    <style>
+        /* Estilos Específicos para esta página */
+        .container-history {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    
+            /* --- AQUI ESTÁ A FONTE QUE PEDISTE --- */
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+    
+        h2 {
+            margin-top: 0; 
+            color: #333; 
+            border-bottom: 1px solid #ddd; 
+            padding-bottom: 15px;
+            font-weight: normal;
+        }
+    
+        /* Estilo da Barra de Pesquisa */
+        .search-box {
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 30px; 
+            background: #f9f9f9; 
+            padding: 20px; 
+            border-radius: 8px;
+            align-items: center;
+        }
+    
+        /* Garante que o dropdown também usa a fonte correta */
+        select, input {
+            flex-grow: 1; 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            background: white;
+            font-size: 16px;
+            font-family: "Segoe UI", Tahoma, sans-serif; /* Fonte nos inputs */
+        }
+    
+        button.btn-search {
+            background: #333; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+            font-family: "Segoe UI", Tahoma, sans-serif; /* Fonte no botão */
+        }
+    
+        /* Tabela Limpa */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        
+        thead { 
+            background: transparent; 
+            color: #333; 
+            border-bottom: 2px solid #7a1c1c; 
+        }
+        
+        th, td { padding: 14px 16px; text-align: left; }
+        tbody tr { border-bottom: 1px solid #eee; }
+        tbody tr:hover { background: #f9f9f9; }
+    
+        .footer {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .footer a { text-decoration: none; color: #7a1c1c; font-weight: bold; }
+        .badge { background: #eee; padding: 6px 14px; border-radius: 20px; font-size: 13px; }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-history">
+        <h2>{{ titulo }}</h2>
+    
+        <form method="GET" class="search-box">
+            <label for="tipo" style="font-weight: bold;">Filtrar por Grupo:</label>
+            
+            <select name="tipo_sangue" id="tipo_sangue" required>
+                <option value="" disabled selected>Selecione o tipo de sangue...</option>
+                <option value="A+" {% if tipo_pesquisa == 'A+' %}selected{% endif %}>A+</option>
+                <option value="A-" {% if tipo_pesquisa == 'A-' %}selected{% endif %}>A-</option>
+                <option value="B+" {% if tipo_pesquisa == 'B+' %}selected{% endif %}>B+</option>
+                <option value="B-" {% if tipo_pesquisa == 'B-' %}selected{% endif %}>B-</option>
+                <option value="AB+" {% if tipo_pesquisa == 'AB+' %}selected{% endif %}>AB+</option>
+                <option value="AB-" {% if tipo_pesquisa == 'AB-' %}selected{% endif %}>AB-</option>
+                <option value="O+" {% if tipo_pesquisa == 'O+' %}selected{% endif %}>O+</option>
+                <option value="O-" {% if tipo_pesquisa == 'O-' %}selected{% endif %}>O-</option>
+            </select>
+    
+            <button type="submit" class="btn-search">Pesquisar</button>
+        </form>
+    
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 15px; background: #fff3cd; color: #856404; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffeeba;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    
+        {% if tipo_pesquisa %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Dador</th>
+                    <th>NIF</th>
+                    <th>Componente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in doacoes %}
+                <tr>
+                    <td>{{ d.data|date:"d/m/Y" }}</td>
+                    <td>{{ d.dador.nome }}</td>
+                    <td>{{ d.dador.nif }}</td>
+                    <td>{{ d.componente|capfirst }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 20px; color: #888;">
+                        Não existem doações registadas para o tipo sanguíneo <strong>{{ tipo_pesquisa }}</strong>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 15px; text-align: right; color: #777; font-size: 14px;">
+            Total encontrado: <strong>{{ doacoes|length }}</strong>
+        </div>
+
+    {% else %}
+        <div style="text-align: center; padding: 30px; color: #999;">
+            Selecione um tipo sanguíneo e clique em <strong>Pesquisar</strong>.
+        </div>
+    {% endif %}
+    
+        <div class="footer">
+            <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
+            <span class="badge">Posto de Sangue</span>
+        </div>
+    </div>
+</body>
+</html>
