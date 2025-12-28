@@ -125,6 +125,15 @@
                         <span style="color: red; font-weight: bold;">Inativo</span>
                     {% endif %}
                 </p>
+                <p>
+                    {% if dador.pode_doar and dador.ativo %}
+                        <span style="color: green; font-weight: bold;"> Pode Doar</span>
+                    {% else %}
+                        <span style="color: red; font-weight: bold;">
+                            Não pode doar
+                        </span>
+                    {% endif %}
+                </p>
             </div>
         {% endif %}
     
