@@ -572,7 +572,7 @@ def historico_tipo_sanguineo(request):
     if search_tipo:
         lista_doacoes = Doacao.objects.filter(dador__tipo_sangue=search_tipo).order_by('-data')
         if not lista_doacoes.exists():
-            messages.warning(request, f"Não existem doações registadas para o tipo '{search_tipo}'.")
+            messages.warning(request, f"Não existem doações registadas para o tipo  '{search_tipo}'.")
 
     return render(request, 'historico_tipo_sanguineo.html', {
         'doacoes': lista_doacoes,
