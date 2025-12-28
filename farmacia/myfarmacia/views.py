@@ -385,10 +385,7 @@ def ativar_dador(request):
             try:
                 dador = Dador.objects.get(nif=search_nif)
             except Dador.DoesNotExist:
-                messages.warning(
-                    request,
-                    f"Nenhum dador encontrado com o NIF '{search_nif}'"
-                )
+                messages.warning(request,f"Nenhum dador encontrado com o NIF '{search_nif}'")
 
     if request.method == 'POST':
         nif = request.POST.get('nif')
@@ -434,15 +431,6 @@ def dadores_apenas_ativos(request):
         'titulo': "Dadores Ativos"
     })
 
-    hoje = date.today()
-    data_limite = date(hoje.year - 18, hoje.month, hoje.day)
-    dadores = Dador.objects.filter(dataNascimento__lte=data_limite)
-
-    return render(request, 'dadores_idade_minima.html', {
-        'entidades': dadores,
-        'titulo': "Dadores registados com idade mínima",
-        'tipo_entidade': 'dadores' 
-    })
 
 def gestao_hospital(request):
     
@@ -515,7 +503,12 @@ def registar_doacao(request):
         doacao_form = DoacaoForm(request.POST)
         if doacao_form.is_valid():
             dador = doacao_form.cleaned_data['nif_dador']
+            dador.ativo = False
+            dador.ultimaDoacao = timezone.now().date()
+            dador.save()
+            doacao_criado = doacao_form.save()
             ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
+
             
             if ultima:
                 hoje = date.today()

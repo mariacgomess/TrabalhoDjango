@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 class TodoItem(models.Model):
@@ -24,11 +26,15 @@ class TipoSangue(models.TextChoices):
     O_POSITIVO = "O+", "O positivo"
     O_NEGATIVO = "O-", "O negativo"
 
+class Genero(models.TextChoices):
+    FEMININO = "F", "Feminino"
+    MASCULINO = "M", "Masculino"
+
 class Dador(models.Model):
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=12, unique=True)
-    genero = models.CharField(max_length = 50)
+    nif = models.CharField(max_length=10, unique=True)
+    genero = models.CharField(max_length=3, choices=Genero.choices)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     telefone = models.CharField(max_length=9, unique=True)
     tipo_sangue = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
@@ -47,7 +53,55 @@ class Dador(models.Model):
             if (today.month, today.day) < (self.dataNascimento.month, self.dataNascimento.day):
                 age -= 1
             return age
+        
         return None # Retorna nada se não tiver data de nascimento
+    
+    @property
+    def pode_doar(self):
+        # Vamos buscar o registo real da última doação na tabela Doacao. O '.first()' pega no mais recente porque ordenamos por '-data'
+        ultima_doacao_obj = self.doacoes.order_by('-data').first()
+
+        if not ultima_doacao_obj:
+            return True
+
+        hoje = timezone.now().date()
+        ultimo_tipo = ultima_doacao_obj.componente.lower() # Converter para minúsculas para facilitar
+        ultima_data = ultima_doacao_obj.data
+        
+        # --- VERIFICAR INTERVALO DE TEMPO ---
+        intervalo_dias = 0
+        if 'sangue' in ultimo_tipo:
+            intervalo_dias = 90 if self.genero == 'M' else 120
+            
+        elif 'globulos' in ultimo_tipo or 'glóbulos' in ultimo_tipo:
+            intervalo_dias = 180 # 6 meses
+            
+        elif 'plasma' in ultimo_tipo:
+            intervalo_dias = 14 # 2 semanas
+            
+        elif 'plaquetas' in ultimo_tipo:
+            intervalo_dias = 14 
+            
+        else:
+            # Se for um tipo desconhecido, usamos uma regra segura padrão (3 meses)
+            intervalo_dias = 90
+
+        # Calculamos a data em que fica livre
+        data_livre = ultima_data + timedelta(days=intervalo_dias)
+
+        return hoje >= data_livre
+    
+    def save(self, *args, **kwargs):
+        # Verifica a idade usando a propriedade que criámos em cima
+        if self.idade is not None and self.idade < 18:
+            self.ativo = False  # Força inativo se for menor
+        elif not self.pode_doar():
+            self.ativo = False
+        else:
+            self.ativo = True 
+
+        # Grava efetivamente na base de dados
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"
@@ -56,6 +110,7 @@ class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
     PLASMA = "plasma", "Plasma"
+    PLAQUETAS = "plaquetas", "Plaquetas"
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)
