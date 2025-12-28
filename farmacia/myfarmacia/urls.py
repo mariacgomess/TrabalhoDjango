@@ -19,6 +19,7 @@ urlpatterns = [
     path('hospital/gestao_hospital/atualizar_hospital/',views.atualizar_hospital, name='atualizar_hospital'),
     path('hospital/gestao_hospital/consultar_hospital/',views.consultar_hospital, name='consultar_hospital'),
     path('hospital/gestao_pedidos/', views.gestao_pedidos, name='gestao_pedidos'),
+    path('hospital/gestao_pedidos/criar_pedido/', views.criar_pedido, name='criar_pedido'),
 
     path("logout/", views.logout_view, name="logout"),
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),

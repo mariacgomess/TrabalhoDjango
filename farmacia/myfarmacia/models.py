@@ -55,7 +55,7 @@ class Dador(models.Model):
 class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
-    PLASMA = "plasma", "plasma"
+    PLASMA = "plasma", "Plasma"
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)

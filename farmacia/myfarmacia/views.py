@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, PedidoForm, PedidoLinhaFormSet
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
 from datetime import date
@@ -461,6 +461,53 @@ def consultar_hospital(request):
     return render(request, 'consultar_hospital.html', {
         'hospital': hospital,
         'titulo': "Informações da Instituição"
+    })
+
+@login_required
+def criar_pedido(request):
+    if request.user.tipo != 'hospital':
+        return redirect('home')
+
+    # 1. Procuramos o hospital e o banco associado ao utilizador logado
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_instancia = perfil.hospital if perfil else None
+    # No teu model, o Hospital tem uma ForeignKey para Banco, por isso:
+    banco_instancia = hospital_instancia.banco if hospital_instancia else None
+
+    if request.method == 'POST':
+        form = PedidoForm(request.POST)
+        formset = PedidoLinhaFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            # 2. Guardamos o Pedido (Cabeçalho)
+            pedido = form.save(commit=False)
+            pedido.hospital = hospital_instancia
+            pedido.banco = banco_instancia  # Preenche o banco automaticamente
+            pedido.save()
+
+            # 3. Guardamos as Linhas (Componentes)
+            linhas = formset.save(commit=False)
+            for linha in linhas:
+                # SÓ guarda se preencheram uma quantidade (evita lixo na DB)
+                if linha.quantidade and linha.quantidade > 0:
+                    linha.pedido = pedido
+                    linha.banco = banco_instancia # Importante: o teu model exige banco aqui
+                    linha.save()
+            
+            # 4. Processa remoções feitas no HTML
+            for obj in formset.deleted_objects:
+                obj.delete()
+
+            messages.success(request, "Pedido enviado com sucesso!")
+            return redirect('pagina_hospital')
+    else:
+        form = PedidoForm()
+        formset = PedidoLinhaFormSet()
+
+    return render(request, 'criar_pedido.html', {
+        'form': form,
+        'formset': formset,
+        'titulo': "Novo Pedido de Sangue"
     })
 
 
