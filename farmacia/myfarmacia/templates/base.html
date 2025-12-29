@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,42 +15,97 @@
         font-family: "Segoe UI", Tahoma, sans-serif;
         background: #f4f6f9;
         color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
     }
 
+    /* Cabeçalho Centrado */
     header {
         background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
         color: white;
-        padding: 30px 40px;
+        padding: 60px 20px;
         box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        text-align: center;
     }
 
     header h1 {
         margin: 0;
-        font-weight: normal;
+        font-weight: 600;
+        font-size: 2.8rem;
     }
 
     header p {
-        margin: 6px 0 20px 0;
+        margin: 10px 0 0 0;
         opacity: 0.9;
+        font-size: 1.2rem;
     }
 
-    nav a {
-        color: white;
-        text-decoration: none;
-        margin-right: 20px;
-        font-size: 15px;
-        padding: 8px 14px;
-        border-radius: 6px;
-        transition: background 0.2s;
-    }
-
-    nav a:hover {
-        background: rgba(255,255,255,0.15);
-    }
-
-    .container {
+    /* Área Branca com a Caixa de Menu */
+    .main-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Centra a caixa verticalmente na parte branca */
         padding: 40px;
     }
+
+    .menu-quadrado {
+        background: white;
+        width: 100%;
+        max-width: 500px; /* Caixa grande */
+        padding: 50px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .menu-quadrado h2 {
+        color: #7a1c1c;
+        margin-bottom: 40px;
+        font-size: 1.8rem;
+        font-weight: 600;
+        border-bottom: 2px solid #f4f6f9;
+        padding-bottom: 15px;
+    }
+
+    /* Botões dentro da caixa */
+    .opcoes-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .btn-menu {
+        text-decoration: none;
+        background: #7a1c1c;
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px rgba(122, 28, 28, 0.2);
+    }
+
+    .btn-menu:hover {
+        background: #4d0f0f;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-ajuda {
+        background: #636e72; /* Cor diferente para a ajuda */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-ajuda:hover {
+        background: #2d3436;
+    }
+
 </style>
 
 </head>
@@ -59,16 +114,28 @@
     <header>
         <h1>Banco de Sangue</h1>
         <p>Bem-vindo/a!</p>
-        <nav>
-            <a href="{% url 'Login' %}">Login</a>
-            <a href="#">Ajuda</a>
-        </nav>
     </header>
+
+    <main class="main-content">
+        <div class="menu-quadrado">
+            <h2>Menu Principal</h2>
+            
+            <div class="opcoes-menu">
+                <a href="{% url 'Login' %}" class="btn-menu">
+                    Iniciar Sessão (Login)
+                </a>
+                
+                <a href="{% url 'ajuda' %}" class="btn-menu btn-ajuda">
+                    Centro de Ajuda
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
 
 </body>
 </html>
-
-<div class="container">
-    {% block content %}
-    {% endblock %}
-</div>

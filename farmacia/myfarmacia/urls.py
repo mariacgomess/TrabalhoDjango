@@ -26,6 +26,7 @@ urlpatterns = [
     path("todos/", views.todos, name="Todos"),
     path("login/", views.login_view, name="Login"),
     path("logout/", views.logout_view, name="logout"),
+    path("ajuda/", views.ajuda, name="ajuda"),
 
     # --- PAINEL ADMINISTRADOR ---
     path("admin-dashboard/", views.pagina_admin, name="pagina_admin"),
@@ -38,8 +39,18 @@ urlpatterns = [
     path("admin-dashboard/exportar-stock/", views.exportar_stock_csv, name="exportar_stock"),
     path("admin-dashboard/stock-global/", views.stock_total_central, name="stock_total_central"),
 
-    # --- PAINEL POSTO DE RECOLHA ---
     path('posto/', views.pagina_posto, name='pagina_posto'),
+
+    path('hospital/', views.pagina_hospital, name='pagina_hospital'),
+    path('hospital/gestao_hospital/',views.gestao_hospital, name='gestao_hospital'),
+    path('hospital/gestao_hospital/atualizar_hospital/',views.atualizar_hospital, name='atualizar_hospital'),
+    path('hospital/gestao_hospital/consultar_hospital/',views.consultar_hospital, name='consultar_hospital'),
+    path('hospital/gestao_pedidos/', views.gestao_pedidos, name='gestao_pedidos'),
+    path('hospital/gestao_pedidos/criar_pedido/', views.criar_pedido, name='criar_pedido'),
+    path('hospital/gestao_pedidos/listar_pedido/', views.listar_pedidos_hospital, name='listar_pedidos'),
+    path('hospital/gestao_pedidos/cancelar_pedido/<int:pedido_id>/', views.cancelar_pedido, name='cancelar_pedido'),
+
+    path("logout/", views.logout_view, name="logout"),
 
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
     path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),

@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -16,10 +17,17 @@ from .serializers import (
     DadorSerializer, DoacaoSerializer, HospitalSerializer, 
     PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
 )
+<<<<<<< HEAD
+=======
+
+>>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 
 # --- Navegação Base ---
 def home(request):
     return render(request, "base.html")
+
+def ajuda(request):
+    return render(request, "ajuda.html")
 
 def login_view(request):
     if request.method == 'POST':
@@ -656,6 +664,49 @@ def criar_pedido(request):
     })
 
 @login_required
+<<<<<<< HEAD
+=======
+def cancelar_pedido(request, pedido_id):
+    """Cancela um pedido pendente mudando o estado para 'cancelado'"""
+    # Procura o pedido pelo ID
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    # Obtém o perfil do hospital logado
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_logado = perfil.hospital if perfil else None
+
+    # Verifica se o pedido pertence ao hospital logado e se ainda está ativo
+    if hospital_logado and pedido.hospital == hospital_logado:
+        if pedido.estado == "ativo":
+            pedido.estado = "cancelado" # Usa a string definida no teu EstadoPedido
+            pedido.save()
+            messages.success(request, f"Pedido #{pedido.id} cancelado com sucesso!")
+        else:
+            messages.warning(request, "Apenas pedidos ativos podem ser cancelados.")
+    else:
+        messages.error(request, "Não tem permissão para cancelar este pedido.")
+
+    return redirect('listar_pedidos') # Nome definido no teu urls.py
+
+@login_required
+def listar_pedidos_hospital(request):
+    """Lista o histórico de pedidos do hospital logado"""
+    if request.user.tipo != 'hospital':
+        return redirect('home')
+
+    # Obtém a instância do hospital associada ao utilizador
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_instancia = perfil.hospital if perfil else None
+
+    # Carrega os pedidos e as respetivas linhas (itens) para evitar múltiplas consultas
+    pedidos = Pedido.objects.filter(hospital=hospital_instancia).prefetch_related('itens').order_by('-data')
+
+    return render(request, 'listar_pedidos.html', {
+        'pedidos': pedidos,
+        'titulo': "Histórico de Pedidos"
+    })
+
+>>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 def registar_doacao(request):
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado.")
@@ -742,6 +793,7 @@ def historico_tipo_sanguineo(request):
 def consultar_doacoes(request):
     doacoes = Doacao.objects.all().order_by('-data')
 
+<<<<<<< HEAD
     total_geral = Doacao.objects.count()
 
     por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id'))
@@ -757,18 +809,16 @@ def consultar_doacoes(request):
             'doacoes': doacoes,
             'titulo': "Consultar doações"
         })
+=======
+    return render(request, 'consultar_doacoes.html', {
+        'doacoes': doacoes,
+        'titulo': "Consultar doações"
+    })
+>>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 
 
 
-################################################################################################
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .serializers import (
-    DadorSerializer, DoacaoSerializer, HospitalSerializer, 
-    PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
-)
 
-# --- VIEWSETS PARA API (REST FRAMEWORK) ---
 
 class BancoViewSet(viewsets.ModelViewSet):
     queryset = Banco.objects.all()

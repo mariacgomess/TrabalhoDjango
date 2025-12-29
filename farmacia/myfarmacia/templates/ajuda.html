@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Ajuda</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    /* Cabeçalho Centrado */
+    header {
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 60px 20px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+
+    header h1 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2.8rem;
+    }
+
+    header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 1.2rem;
+    }
+
+    /* Área Branca com a Caixa de Menu */
+    .main-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center; /* Centra a caixa verticalmente na parte branca */
+        padding: 40px;
+    }
+
+    .menu-quadrado {
+        background: white;
+        width: 100%;
+        max-width: 500px; /* Caixa grande */
+        padding: 50px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+
+    .menu-quadrado h2 {
+        color: #7a1c1c;
+        margin-bottom: 40px;
+        font-size: 1.8rem;
+        font-weight: 600;
+        border-bottom: 2px solid #f4f6f9;
+        padding-bottom: 15px;
+    }
+
+    /* Botões dentro da caixa */
+    .opcoes-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .btn-menu {
+        text-decoration: none;
+        background: #7a1c1c;
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        font-size: 1.2rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px rgba(122, 28, 28, 0.2);
+    }
+
+    .btn-menu:hover {
+        background: #4d0f0f;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn-ajuda {
+        background: #636e72; /* Cor diferente para a ajuda */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-ajuda:hover {
+        background: #2d3436;
+    }
+
+    .ajuda-container {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        max-width: 900px;
+        margin: -30px auto 40px auto; /* Sobe um pouco para intersetar o header */
+    }
+
+    .ajuda-seccao {
+        margin-bottom: 40px;
+    }
+
+    .ajuda-seccao h3 {
+        color: #7a1c1c;
+        border-left: 5px solid #7a1c1c;
+        padding-left: 15px;
+        margin-bottom: 20px;
+    }
+
+    .guia-passos {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+    }
+
+    .passo-card {
+        flex: 1;
+        min-width: 250px;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+    }
+
+    .passo-card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover; /* Para as imagens ficarem direitas */
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+    }
+
+    .btn-contato {
+        display: inline-block;
+        background: #7a1c1c;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        margin-top: 10px;
+    }
+
+</style>
+
+</head>
+<body>
+
+    <header>
+        <h1>Banco de Sangue</h1>
+        <p>Bem-vindo/a!</p>
+    </header>
+
+<div class="ajuda-container">
+    <h2 style="text-align: center; color: #4d0f0f; font-size: 2rem;">Centro de Ajuda</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 40px;">Tudo o que precisa de saber para utilizar o sistema.</p>
+
+    <div class="ajuda-seccao">
+        <h3>Como Realizar Pedidos (Hospitais)</h3>
+        <div class="guia-passos">
+            <div class="passo-card">
+                <img src="{% static 'myfarmacia/imagens/criarpedido.png' %}" alt="Criação do pedido">
+                <h4>1. Criar Pedido</h4>
+                <p>Aceda a 'Gestão de Pedidos' e posteriormente a 'Criar Pedido', ai preencha as caixinhas pedidas com o tipo sanguíneo, tipo de componente e quatidade.</p>
+            </div>
+            <div class="passo-card">
+                <img src="{% static 'myfarmacia/imagens/adicionalinha.png' %}" alt="Adicionar Linhas">
+                <h4>2. Múltiplas Linhas</h4>
+                <p>Use o botão "+ Adicionar Outra Linha" para pedir diferentes tipos de sangue e/ou componentes de uma só vez. Se quiser apagar uma das linhas é só carregar no icon do lixo.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="ajuda-seccao">
+        <h3>Critérios para Doação</h3>
+        <ul style="line-height: 1.8; color: #444;">
+            <li><strong>Peso:</strong> Deve ter mais de 50kg.</li>
+            <li><strong>Idade:</strong> Entre 18 e 65 anos.</li>
+            <li><strong>Saúde:</strong> Não estar em jejum e não ter consumido álcool nas últimas 12h.</li>
+        </ul>
+    </div>
+
+    <div class="ajuda-seccao" style="text-align: center; background: #fff5f5; padding: 20px; border-radius: 12px;">
+        <h3>Ainda tem dúvidas?</h3>
+        <p>A nossa equipa técnica está disponível 24/7.</p>
+        <p><strong>800 10 20 30</strong></p>
+        <a href="mailto:suporte@bancosangue.pt" class="btn-contato">Enviar Email</a>
+    </div>
+</div>
+</body>
+</html>
