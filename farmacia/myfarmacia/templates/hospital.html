@@ -212,11 +212,11 @@
         <section class="cards">
             <div class="card">
                 <h3>Pedidos Pendentes</h3>
-                <span>{{ pedidos_pendentes|default:"0" }}</span>
+                <span>{{ pedidos_pendentes2 }}</span>
             </div>
             <div class="card">
                 <h3>Stock Global Disponível</h3>
-                <span>{{ stock_total|default:"0" }}</span>
+                <span>{{ stock_total2}}</span>
             </div>
         </section>
 
@@ -227,7 +227,6 @@
             <div class="button-grid">
                 <a href="{% url 'gestao_hospital' %}">Gestão de Hospitais</a>
                 <a href="{% url 'gestao_pedidos' %}">Gestão de Pedidos</a>
-                <a href="{% url 'consultas_estatisticas' %}">Consultas e Estatísticas</a>
             </div>
         </section>
 

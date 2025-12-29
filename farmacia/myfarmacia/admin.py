@@ -31,17 +31,16 @@ class LinhaPedidoInline(admin.TabularInline):
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    # list_display alterado para usar a função que mostra o nome amigável do estado
-    list_display = ('id', 'hospital', 'data', 'exibir_estado', 'banco')
+    # Mudámos 'estado' para 'exibir_estado_bonito' para usar a nossa função
+    list_display = ('id', 'hospital', 'data', 'exibir_estado_bonito', 'banco')
     list_filter = ('estado', 'banco')
     inlines = [LinhaPedidoInline]
 
-    def exibir_estado(self, obj):
-        # Esta função garante que aparece "Concluído" em vez de "concluido"
+    def exibir_estado_bonito(self, obj):
+        # Esta função limpa os valores "1" ou "0" antigos e mostra o texto das choices
         return obj.get_estado_display()
     
-    # Define o título da coluna no painel
-    exibir_estado.short_description = 'Estado'
+    exibir_estado_bonito.short_description = 'Estado Atual'
 
 @admin.register(PostoRecolha)
 class PostoRecolhaAdmin(admin.ModelAdmin):
