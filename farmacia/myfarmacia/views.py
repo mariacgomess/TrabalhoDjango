@@ -2,19 +2,20 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
-from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, PedidoForm, PedidoLinhaFormSet
-=======
 from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital, Pedido, LinhaPedido
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm, PedidoForm, PedidoLinhaFormSet
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
 from datetime import date
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Count
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .serializers import (
+    DadorSerializer, DoacaoSerializer, HospitalSerializer, 
+    PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
+)
 
 # --- Navegação Base ---
 def home(request):
@@ -48,37 +49,45 @@ def login_view(request):
     return render(request, 'login.html')
 
 # --- Painel do Administrador ---
+@login_required
 def pagina_admin(request):
-    # Verificação de segurança: usa 'admin' conforme o seu AbstractUser
     if request.user.tipo != 'admin':
-        messages.error(request, "Acesso negado. Apenas administradores podem entrar aqui.")
         return redirect('home')
     
-    # Estatísticas para o Dashboard
+    # KPIs Básicos
     stock_total = Doacao.objects.filter(valido=True).count()
     total_postos = PostoRecolha.objects.count()
     total_hospitais = Hospital.objects.count()
 
-    # Lógica para contar quantos tipos de sangue estão abaixo do limite (5)
+    # Lógica de Alertas Unificada
     limite = 5
     num_alertas = 0
+    perigo_critico = False
+    
     tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+    componentes = ["Sangue", "Plasma", "Globulos Vermelhos"]
     
     for t in tipos:
-        if Doacao.objects.filter(dador__tipo_sangue=t, valido=True).count() < limite:
-            num_alertas += 1
+        for comp in componentes:
+            total = Doacao.objects.filter(
+                dador__tipo_sangue=t, 
+                componente__iexact=comp, 
+                valido=True
+            ).count()
+            
+            if total < limite:
+                num_alertas += 1
+                if total == 0:
+                    perigo_critico = True
 
     context = {
         'stock_total': stock_total,
         'total_postos': total_postos,
         'total_hospitais': total_hospitais,
         'num_alertas': num_alertas,
-      
+        'perigo_critico': perigo_critico,
+        'pedidos_pendentes': Pedido.objects.filter(estado=True).count(),
     }
-
-    pedidos_pendentes = Pedido.objects.filter(estado=True).count() # True se pendente
-    context['pedidos_pendentes'] = pedidos_pendentes
-
 
     return render(request, 'admin_dashboard.html', context)
 
@@ -254,23 +263,32 @@ def stock_por_componente(request):
     })
 
 @login_required
-def stock_critico(request):
-    
-    if str(request.user.tipo).lower() != 'admin':
-        print("DEBUG: Acesso negado, redirecionando...")
-        return redirect('home')
-
-    # Define um limite (ex: menos de 5 unidades é crítico)
-    limite = 5
-    alertas = []
+def stock_total_central(request):
     tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-    
-    for t in tipos:
-        total = Doacao.objects.filter(dador__tipo_sangue=t, valido=True).count()
-        if total < limite:
-            alertas.append({'tipo': t, 'quantidade': total})
-            
-    return render(request, 'stock_critico.html', {'alertas': alertas})
+    # Garante que estes nomes batem certo com a tua BD
+    comps = ["Sangue", "Plasma", "Globulos Vermelhos"]
+    limite = 5
+    stock_ideal = 20
+
+    componentes_data = []
+    for c in comps:
+        itens_do_comp = []
+        for t in tipos:
+            qtd = Doacao.objects.filter(dador__tipo_sangue=t, componente__iexact=c, valido=True).count()
+            perc = min((qtd / stock_ideal) * 100, 100)
+            itens_do_comp.append({
+                'tipo': t,
+                'quantidade': qtd,
+                'percentagem': perc,
+                'ruptura': qtd == 0,
+                'critico': qtd < limite and qtd > 0
+            })
+        componentes_data.append({'nome': c, 'itens': itens_do_comp})
+
+    return render(request, 'stock_total_central.html', {
+        'componentes_data': componentes_data,
+        'titulo': "Monitor de Stock Global"
+    })
 
 
 @login_required
@@ -468,36 +486,38 @@ def desativar_dador(request):
 @login_required
 def ativar_dador(request):
     dador = None
-
     if request.method == 'GET':
         search_nif = request.GET.get('nif')
         if search_nif:
-            try:
-                dador = Dador.objects.get(nif=search_nif)
-            except Dador.DoesNotExist:
-                messages.warning(request,f"Nenhum dador encontrado com o NIF '{search_nif}'")
+            dador = Dador.objects.filter(nif=search_nif).first()
+            if not dador:
+                messages.warning(request, f"NIF '{search_nif}' não encontrado.")
 
     if request.method == 'POST':
         nif = request.POST.get('nif')
-        try:
-            dador = Dador.objects.get(nif=nif)
-            if dador.idade < 18:
-                messages.error(request, f"Impossível ativar: {dador.nome} ainda é menor de idade ({dador.idade} anos).")
-                return redirect('gestao_dadores')
-            
-            dador.ativo = True
-            dador.save()
-
-            messages.success(request, f"O dador {dador.nome} foi ativado com sucesso!")
+        dador = get_object_or_404(Dador, nif=nif)
+        
+        # 1. Verificar idade (já tinhas e está bem)
+        if dador.idade < 18:
+            messages.error(request, "Impossível ativar: dador menor de idade.")
             return redirect('gestao_dadores')
 
-        except Dador.DoesNotExist:
-            messages.error(request, "Erro ao ativar o dador.")
+        # 2. Verificar se o período de repouso já passou
+        ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
+        if ultima:
+            intervalo = 120 if dador.genero == 'Feminino' else 90
+            dias_passados = (date.today() - ultima.data).days
+            
+            if dias_passados < intervalo:
+                messages.error(request, f"Impossível ativar! O dador ainda está em período de carência (faltam {intervalo - dias_passados} dias).")
+                return redirect('gestao_dadores')
 
-    return render(request, 'ativar_dador.html', {
-        'dador': dador,
-        'titulo': "Ativar Dador"
-    })
+        dador.ativo = True
+        dador.save()
+        messages.success(request, f"O dador {dador.nome} está agora APTO para doar.")
+        return redirect('gestao_dadores')
+
+    return render(request, 'ativar_dador.html', {'dador': dador, 'titulo': "Ativar Dador"})
 
 
 @login_required
@@ -589,7 +609,6 @@ def consultar_hospital(request):
     })
 
 @login_required
-<<<<<<< HEAD
 def criar_pedido(request):
     if request.user.tipo != 'hospital':
         return redirect('home')
@@ -636,53 +655,46 @@ def criar_pedido(request):
         'titulo': "Novo Pedido de Sangue"
     })
 
-=======
+@login_required
 def registar_doacao(request):
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado.")
         return redirect('home') 
     
-    # Inicializamos a variável como None para evitar o erro de "not defined"
-    doacao_criada = None 
-
     if request.method == 'POST':
         doacao_form = DoacaoForm(request.POST)
         if doacao_form.is_valid():
+            # O dador vem validado do formulário (que já verifica se ele existe e se está ativo)
             dador = doacao_form.cleaned_data['nif_dador']
-            dador.ativo = False
-            dador.ultimaDoacao = timezone.now().date()
-            dador.save()
-            doacao_criado = doacao_form.save()
-            ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
-
             
+            # --- VALIDAÇÃO DE INTERVALO ---
+            ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
             if ultima:
                 hoje = date.today()
-     
                 dias_passados = (hoje - ultima.data).days
+                # Regra: 120 dias para Mulheres, 90 para Homens
                 intervalo = 120 if dador.genero == 'Feminino' else 90
 
                 if dias_passados < intervalo:
                     proxima_data = ultima.data + timedelta(days=intervalo)
-                    messages.error(request, f"O dador {dador.nome} ainda não pode doar. Próxima data possível: {proxima_data}")
-                    return render(request, 'registar_doacao.html', {
-                        'entidade_form': doacao_form,
-                        'titulo': "Registar Nova Doação"
-                    })
-            
+                    messages.error(request, f"Dador impedido. Última doação foi há {dias_passados} dias. Próxima data: {proxima_data}")
+                    return render(request, 'registar_doacao.html', {'entidade_form': doacao_form, 'titulo': "Registar Nova Doação"})
+
+            # --- SUCESSO NO REGISTO ---
             doacao_criada = doacao_form.save()
             
-            messages.success(request, f"Doação de {dador.nome} registada com sucesso!")
+            # Após doar, o dador fica INATIVO automaticamente (período de repouso)
+            dador.ativo = False
+            dador.save()
+            
+            messages.success(request, f"Doação de {dador.nome} registada! O dador está agora em período de repouso.")
             return redirect('gestao_doacoes')
-        else:
-            messages.error(request, "Erro ao validar os dados do formulário.")
     else:
         doacao_form = DoacaoForm()
 
     return render(request, 'registar_doacao.html', {
         'entidade_form': doacao_form,
-        'titulo': "Registar Nova Doação",
-        'doacao': doacao_criada  # Passamos a variável (mesmo que seja None)
+        'titulo': "Registar Nova Doação"
     })
 
 def historico_dador(request):
@@ -696,13 +708,21 @@ def historico_dador(request):
             lista_doacoes = Doacao.objects.filter(dador=dador_encontrado).order_by('-data')
         except Dador.DoesNotExist:
             messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
-
+    dias_restantes = 0
+    if dador_encontrado:
+        ultima = lista_doacoes.first() # Já está order_by -data
+        if ultima:
+            intervalo = 120 if dador_encontrado.genero == 'Feminino' else 90
+            dias_passados = (date.today() - ultima.data).days
+            dias_restantes = max(0, intervalo - dias_passados)
+            
     return render(request, 'historico_dador.html', {
         'dador': dador_encontrado,
         'doacoes': lista_doacoes,
-        'nif_pesquisa': search_nif,
+        'dias_restantes': dias_restantes,
         'titulo': "Histórico de Doações"
     })
+
 
 def historico_tipo_sanguineo(request):
     lista_doacoes = []
@@ -722,11 +742,21 @@ def historico_tipo_sanguineo(request):
 def consultar_doacoes(request):
     doacoes = Doacao.objects.all().order_by('-data')
 
-    return render(request, 'consultar_doacoes.html', {
-        'doacoes': doacoes,
-        'titulo': "Consultar doações"
-    })
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
+    total_geral = Doacao.objects.count()
+
+    por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id'))
+
+    for item in por_tipo:
+        if total_geral > 0:
+            # Cálculo da percentagem
+            item['percentagem'] = (item['qtd'] / total_geral) * 100
+        else:
+            item['percentagem'] = 0
+
+        return render(request, 'consultar_doacoes.html', {
+            'doacoes': doacoes,
+            'titulo': "Consultar doações"
+        })
 
 
 

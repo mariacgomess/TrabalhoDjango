@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Central | Banco de Sangue</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h2 { color: #7a1c1c; margin: 0; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .column-container {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 15px;
+            min-height: 80vh;
+        }
+
+        .column-title {
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #7a1c1c;
+        }
+
+        .item-card {
+            background: white;
+            margin-bottom: 12px;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 5px solid #2ecc71;
+        }
+
+        .item-card.is-critico { border-left-color: #f1c40f; background: #fffdf2; }
+        .item-card.is-ruptura { border-left-color: #e74c3c; background: #fff5f5; animation: pulse 2s infinite; }
+
+        .blood-type { font-size: 1.2rem; font-weight: bold; width: 50px; }
+        
+        .progress-box { flex-grow: 1; margin: 0 15px; }
+        .bar-bg { background: #eee; height: 8px; border-radius: 4px; overflow: hidden; }
+        
+        .bar-fill { 
+            height: 100%; 
+            border-radius: 4px; 
+            transition: width 0.5s; 
+            /* Usamos a variável para o CSS não dar erro de at-rule */
+            width: var(--bar-width, 0%);
+        }
+        
+        .bar-green { background: #2ecc71; }
+        .bar-yellow { background: #f1c40f; }
+        .bar-red { background: #e74c3c; }
+
+        .qtd-badge {
+            background: #7a1c1c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        
+        .btn-back { text-decoration: none; color: #7a1c1c; font-weight: bold; border: 2px solid #7a1c1c; padding: 10px 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2> {{ titulo }}</h2>
+    <a href="{% url 'pagina_admin' %}" class="btn-back">Voltar</a>
+</div>
+
+<div class="main-grid">
+    {% for comp_group in componentes_data %}
+    <div class="column-container">
+        <div class="column-title">{{ comp_group.nome }}</div>
+        
+        {% for item in comp_group.itens %}
+        <div class="item-card {% if item.ruptura %}is-ruptura{% elif item.critico %}is-critico{% endif %}">
+            <div class="blood-type">{{ item.tipo }}</div>
+            
+            <div class="progress-box">
+                <div class="bar-bg">
+                    <div class="bar-fill {% if item.ruptura %}bar-red{% elif item.critico %}bar-yellow{% else %}bar-green{% endif %}" 
+                         style="--bar-width: {{ item.percentagem|floatformat:0 }}%;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="qtd-badge">{{ item.quantidade }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+</body>
+</html>

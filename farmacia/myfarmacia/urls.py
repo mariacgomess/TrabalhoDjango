@@ -36,10 +36,11 @@ urlpatterns = [
     path("admin-dashboard/stock-tipo/", views.stock_por_tipo, name="stock_tipo"),
     path("admin-dashboard/stock-componente/", views.stock_por_componente, name="stock_componente"),
     path("admin-dashboard/exportar-stock/", views.exportar_stock_csv, name="exportar_stock"),
-    path("admin-dashboard/stock-critico/", views.stock_critico, name="stock_critico"),
+    path("admin-dashboard/stock-global/", views.stock_total_central, name="stock_total_central"),
 
     # --- PAINEL POSTO DE RECOLHA ---
     path('posto/', views.pagina_posto, name='pagina_posto'),
+
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
     path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),
     path("posto/consultas_estatisticas/", views.consultas_estatisticas, name="consultas_estatisticas"),
@@ -62,8 +63,10 @@ urlpatterns = [
 
     # --- PAINEL HOSPITAL ---
     path('hospital/', views.pagina_hospital, name='pagina_hospital'),
-    path('hospital/gestao_hospital/', views.gestao_hospital, name='gestao_hospital'),
-    path('hospital/gestao_hospital/atualizar_hospital/', views.atualizar_hospital, name='atualizar_hospital'),
-    path('hospital/gestao_hospital/consultar_hospital/', views.consultar_hospital, name='consultar_hospital'),
+    path('hospital/gestao_hospital/',views.gestao_hospital, name='gestao_hospital'),
+    path('hospital/gestao_hospital/atualizar_hospital/',views.atualizar_hospital, name='atualizar_hospital'),
+    path('hospital/gestao_hospital/consultar_hospital/',views.consultar_hospital, name='consultar_hospital'),
     path('hospital/gestao_pedidos/', views.gestao_pedidos, name='gestao_pedidos'),
+    path('hospital/gestao_pedidos/criar_pedido/', views.criar_pedido, name='criar_pedido'),
+
 ]

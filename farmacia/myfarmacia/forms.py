@@ -1,13 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-<<<<<<< HEAD
 from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador
 from django.forms import inlineformset_factory
 from .models import Pedido, LinhaPedido
-=======
 from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador, Doacao
 from datetime import date
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
 
 # Formulário para criar a conta de login
 class CriarUtilizadorForm(UserCreationForm):
@@ -96,7 +93,6 @@ class DadorForm(forms.ModelForm):
             raise forms.ValidationError("Este NIF já se encontra registado no sistema.")
             
         return nif
-<<<<<<< HEAD
 
 # forms.py
 # 1. Formulário para o cabeçalho do Pedido (Data)
@@ -126,7 +122,6 @@ PedidoLinhaFormSet = inlineformset_factory(
     extra=1,              # Começa com apenas 1 linha
     can_delete=True       # Permite apagar linhas
 )
-=======
     
 class DoacaoForm(forms.ModelForm):
     # Criamos um campo extra que NÃO existe no modelo Doacao
@@ -169,4 +164,3 @@ class DoacaoForm(forms.ModelForm):
         if commit:
             doacao.save()
         return doacao
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
