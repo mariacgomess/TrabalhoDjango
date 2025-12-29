@@ -67,9 +67,10 @@ class DadorForm(forms.ModelForm):
                 self.add_error('dataNascimento', "A idade máxima para o primeiro registo é 65 anos.")
             
         
-        if peso is not None and peso < 50:
-            self.add_error('peso', "O dador deve pesar pelo menos 50kg para poder doar.")
-            
+        if not self.instance.pk:
+            if peso is not None and peso < 50:
+                self.add_error('peso', "Para o primeiro registo, o dador deve pesar pelo menos 50kg.")
+                
         return cleaned_data
     
     def clean_nif(self):
