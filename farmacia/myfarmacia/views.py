@@ -63,6 +63,7 @@ def pagina_admin(request):
     stock_total = Doacao.objects.filter(valido=True).count()
     total_postos = PostoRecolha.objects.count()
     total_hospitais = Hospital.objects.count()
+    pedidos_pendentes_contagem = Pedido.objects.filter(estado='ativo').count()
 
     # Lógica de Alertas Unificada
     limite = 5
@@ -91,12 +92,12 @@ def pagina_admin(request):
         'total_hospitais': total_hospitais,
         'num_alertas': num_alertas,
         'perigo_critico': perigo_critico,
-        'pedidos_pendentes': Pedido.objects.filter(estado=True).count(),
+        'pedidos_pendentes': pedidos_pendentes_contagem,
+        # Em vez de filter(estado='True')
         'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
         'ultimo_login': request.user.last_login, # Pega na data real do último login
-}
-    
 
+}
     return render(request, 'admin_dashboard.html', context)
 
 ##extra extra
@@ -196,9 +197,31 @@ def criar_hospital_view(request):
 def pagina_hospital(request):
     if request.user.tipo != 'hospital':
         return redirect('login')
-    return render(request, 'hospital.html',{
-        'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
-        'ultimo_login': request.user.last_login, # Pega na data real do último login)
+
+    # 1. Identificar instâncias
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_instancia = perfil.hospital if perfil else None
+    banco_instancia = hospital_instancia.banco if hospital_instancia else None
+
+    # 2. Cálculos de Stock e Pedidos
+    qtd_stock_global = 0
+    if banco_instancia:
+        qtd_stock_global = Doacao.objects.filter(banco=banco_instancia, valido=True).count()
+
+    qtd_pedidos_meus = 0
+    if hospital_instancia:
+        qtd_pedidos_meus = Pedido.objects.filter(
+            hospital=hospital_instancia, 
+            estado='ativo'
+        ).count()
+
+    # 3. Enviar para o HTML com os nomes corretos (stock_total2 e pedidos_pendentes2)
+    return render(request, 'hospital.html', {
+        'nome_hospital': hospital_instancia.nome if hospital_instancia else "Hospital",
+        'nome_banco': banco_instancia.nome if banco_instancia else "Banco Central",
+        'ultimo_login': request.user.last_login,
+        'stock_total2': qtd_stock_global,
+        'pedidos_pendentes2': qtd_pedidos_meus,
     })
 
 
