@@ -26,6 +26,7 @@ urlpatterns = [
     path("todos/", views.todos, name="Todos"),
     path("login/", views.login_view, name="Login"),
     path("logout/", views.logout_view, name="logout"),
+    path("ajuda/", views.ajuda, name="ajuda"),
 
     # --- PAINEL ADMINISTRADOR ---
     path("admin-dashboard/", views.pagina_admin, name="pagina_admin"),
@@ -36,6 +37,7 @@ urlpatterns = [
     path("admin-dashboard/stock-tipo/", views.stock_por_tipo, name="stock_tipo"),
     path("admin-dashboard/stock-componente/", views.stock_por_componente, name="stock_componente"),
     path("admin-dashboard/exportar-stock/", views.exportar_stock_csv, name="exportar_stock"),
+    path("admin-dashboard/stock-critico/", views.stock_critico, name="stock_critico"),
 
     path('posto/', views.pagina_posto, name='pagina_posto'),
 

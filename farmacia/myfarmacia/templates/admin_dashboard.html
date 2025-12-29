@@ -5,9 +5,7 @@
     <title>Painel do Administrador | Banco de Sangue</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -16,10 +14,7 @@
             color: #333;
         }
 
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
+        .layout { display: flex; min-height: 100vh; }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -37,30 +32,8 @@
             padding-bottom: 15px;
         }
 
-        .menu {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .menu a {
-            color: white;
-            text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .menu a:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
         /* ===== MAIN ===== */
-        .content {
-            flex: 1;
-            padding: 30px 40px;
-        }
+        .content { flex: 1; padding: 30px 40px; }
 
         .header {
             display: flex;
@@ -69,11 +42,7 @@
             margin-bottom: 30px;
         }
 
-        .header h1 {
-            margin: 0;
-            color: #7a1c1c;
-            font-weight: normal;
-        }
+        .header h1 { margin: 0; color: #7a1c1c; font-weight: normal; }
 
         .user {
             background: #eee;
@@ -98,16 +67,8 @@
             text-align: center;
         }
 
-        .card h3 {
-            margin-top: 0;
-            color: #7a1c1c;
-            font-weight: normal;
-        }
-
-        .card span {
-            font-size: 32px;
-            font-weight: bold;
-        }
+        .card h3 { margin-top: 0; color: #7a1c1c; font-weight: normal; font-size: 16px;}
+        .card span { font-size: 32px; font-weight: bold; }
 
         /* ===== ACTIONS ===== */
         .actions {
@@ -123,16 +84,8 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.08);
         }
 
-        .action-box h3 {
-            margin-top: 0;
-            color: #7a1c1c;
-            font-weight: normal;
-        }
-
-        .action-box p {
-            color: #666;
-            margin-bottom: 20px;
-        }
+        .action-box h3 { margin-top: 0; color: #7a1c1c; font-weight: normal; }
+        .action-box p { color: #666; margin-bottom: 20px; }
 
         .action-box a {
             display: block;
@@ -144,68 +97,50 @@
             margin-bottom: 10px;
             transition: background 0.2s;
             font-size: 14px;
+            text-align: center;
         }
 
-        .action-box a:hover {
-            background: #5f1414;
+        .action-box a:hover { background: #5f1414; }
+
+        /* Botão de Alerta Crítico (Amarelo/Laranja) */
+        .btn-alert {
+            background: #ffc107 !important;
+            color: #333 !important;
+            font-weight: bold;
+            border: 1px solid #e0a800;
         }
+        .btn-alert:hover { background: #e0a800 !important; }
+
+        .badge-count {
+            background: #dc3545;
+            color: white;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-size: 11px;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Botão de Exportar (Verde) */
+        .btn-export { background: #28a745 !important; font-weight: bold; margin-top: 15px; }
+        .btn-export:hover { background: #218838 !important; }
 
         /* ===== LOGOUT ===== */
-        .logout {
-            margin-top: 40px;
-            text-align: right;
-        }
+        .logout { margin-top: 40px; text-align: right; }
+        .logout a { color: #7a1c1c; text-decoration: none; font-weight: bold; }
 
-        .logout a {
-            color: #7a1c1c;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .logout a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 900px) {
-            .actions {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Estilo específico para o botão de exportar (Verde Excel) */
-        .btn-export {
-            display: block;
-            text-decoration: none;
-            background: #28a745 !important; /* Verde */
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px; /* Espaço extra para separar dos outros links */
-            transition: background 0.2s;
-            font-size: 14px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .btn-export:hover {
-            background: #218838 !important;
-        }
-
+        @media (max-width: 900px) { .actions { grid-template-columns: 1fr; } }
     </style>
 </head>
 
 <body>
 
 <div class="layout">
-
     <aside class="sidebar">
         <h2>Banco de Sangue</h2>
-
-        
     </aside>
 
     <main class="content">
-
         <div class="header">
             <h1>Gestão Central (Administrador)</h1>
             <div class="user">👤 {{ request.user.username }}</div>
@@ -213,47 +148,51 @@
 
         <section class="cards">
             <div class="card">
-                <h3> Stock Total</h3>
+                <h3>Stock Total</h3>
                 <span>{{ stock_total }}</span>
             </div>
             <div class="card">
-                <h3> Total Postos</h3>
+                <h3>Total Postos</h3>
                 <span>{{ total_postos }}</span>
             </div>
             <div class="card">
-                <h3> Total Hospitais</h3>
+                <h3>Total Hospitais</h3>
                 <span>{{ total_hospitais }}</span>
             </div>
         </section>
 
         <section class="actions">
-
             <div class="action-box">
                 <h3>Registo de Entidades</h3>
                 <p>Adicionar novas unidades à rede:</p>
-                <a href="{% url 'criar_hospital' %}"> Criar Novo Hospital</a>
-                <a href="{% url 'criar_posto' %}"> Criar Posto de Recolha</a>
+                <a href="{% url 'criar_hospital' %}">Criar Novo Hospital</a>
+                <a href="{% url 'criar_posto' %}">Criar Posto de Recolha</a>
             </div>
 
             <div class="action-box">
                 <h3>Consultas e Relatórios</h3>
                 <p>Visualizar dados do sistema:</p>
-                <a href="{% url 'listar_hospitais' %}"> Listar Hospitais</a>
-                <a href="{% url 'listar_postos' %}"> Listar Postos</a>
-                <a href="{% url 'stock_tipo' %}"> Stock por Tipo</a>
-                <a href="{% url 'stock_componente' %}"> Stock por Componente</a>
+                <a href="{% url 'listar_hospitais' %}">Listar Hospitais</a>
+                <a href="{% url 'listar_postos' %}">Listar Postos</a>
+                <a href="{% url 'stock_tipo' %}">Stock por Tipo</a>
+                <a href="{% url 'stock_componente' %}">Stock por Componente</a>
                 
+                <a href="{% url 'stock_critico' %}" class="btn-alert">
+                    Alertas Críticos 
+                    {% if num_alertas > 0 %}
+                        <span class="badge-count">{{ num_alertas }}</span>
+                    {% endif %}
+                </a>
+
                 <a href="{% url 'exportar_stock' %}" class="btn-export">
-                   Exportar Stock Completo (CSV)
+                    Exportar Stock Completo (CSV)
                 </a>
             </div>
-
         </section>
 
         <div class="logout">
             <a href="{% url 'logout' %}">⏻ Sair e Guardar Sessão</a>
         </div>
-
     </main>
 </div>
 

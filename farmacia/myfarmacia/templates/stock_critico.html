@@ -1,0 +1,82 @@
+
+{% block content %}
+<style>
+    .alerta-container {
+        max-width: 800px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .titulo-alerta {
+        color: #7a1c1c;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid #f2f2f2;
+        padding-bottom: 15px;
+    }
+
+    .grid-alertas {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .alerta-item {
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #ffcccc;
+        background: #fff5f5;
+    }
+
+    .alerta-item.critico-zero {
+        background: #7a1c1c;
+        color: white;
+    }
+
+    .tipo-sangue {
+        font-size: 24px;
+        font-weight: bold;
+        display: block;
+    }
+
+    .qtd-alerta {
+        font-size: 14px;
+    }
+
+    .btn-voltar {
+        display: inline-block;
+        margin-top: 25px;
+        text-decoration: none;
+        color: #7a1c1c;
+        font-weight: bold;
+        font-size: 14px;
+    }
+</style>
+
+<div class="alerta-container">
+    <h2 class="titulo-alerta"> Alertas de Stock Crítico</h2>
+    
+    <p>Os seguintes grupos sanguíneos estão abaixo do limite de segurança (5 unidades):</p>
+
+    <div class="grid-alertas">
+        {% for alerta in alertas %}
+            <div class="alerta-item {% if alerta.quantidade == 0 %}critico-zero{% endif %}">
+                <span class="tipo-sangue">{{ alerta.tipo }}</span>
+                <span class="qtd-alerta">{{ alerta.quantidade }} unidades</span>
+            </div>
+        {% empty %}
+            <p style="grid-column: span 3; color: green; font-weight: bold; text-align: center;">
+                Todo o stock está acima do limite de segurança.
+            </p>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'pagina_admin' %}" class="btn-voltar">← Voltar</a>
+</div>
+{% endblock %}

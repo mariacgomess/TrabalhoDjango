@@ -22,6 +22,9 @@ from .serializers import (
 def home(request):
     return render(request, "base.html")
 
+def ajuda(request):
+    return render(request, "ajuda.html")
+
 def login_view(request):
     if request.method == 'POST':
         username_recebido = request.POST.get('username')
@@ -61,15 +64,26 @@ def pagina_admin(request):
     total_postos = PostoRecolha.objects.count()
     total_hospitais = Hospital.objects.count()
 
+    # Lógica para contar quantos tipos de sangue estão abaixo do limite (5)
+    limite = 5
+    num_alertas = 0
+    tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+    
+    for t in tipos:
+        if Doacao.objects.filter(dador__tipo_sangue=t, valido=True).count() < limite:
+            num_alertas += 1
+
     context = {
         'stock_total': stock_total,
         'total_postos': total_postos,
         'total_hospitais': total_hospitais,
+        'num_alertas': num_alertas,
       
     }
 
     pedidos_pendentes = Pedido.objects.filter(estado=True).count() # True se pendente
     context['pedidos_pendentes'] = pedidos_pendentes
+
 
     return render(request, 'admin_dashboard.html', context)
 
@@ -246,8 +260,11 @@ def stock_por_componente(request):
 
 @login_required
 def stock_critico(request):
-    if request.user.tipo != 'admin': return redirect('home')
     
+    if str(request.user.tipo).lower() != 'admin':
+        print("DEBUG: Acesso negado, redirecionando...")
+        return redirect('home')
+
     # Define um limite (ex: menos de 5 unidades é crítico)
     limite = 5
     alertas = []
@@ -258,7 +275,7 @@ def stock_critico(request):
         if total < limite:
             alertas.append({'tipo': t, 'quantidade': total})
             
-    return render(request, 'admin/stock_critico.html', {'alertas': alertas})
+    return render(request, 'stock_critico.html', {'alertas': alertas})
 
 
 @login_required
