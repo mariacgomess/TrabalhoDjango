@@ -2,12 +2,10 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Painel do Administrador | Banco de Sangue</title>
+    <title>Listar Dadores | Banco de Sangue</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -16,51 +14,82 @@
             color: #333;
         }
 
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
+        .layout { display: flex; min-height: 100vh; }
 
-        /* ===== SIDEBAR ===== */
+        /* ===== SIDEBAR (IGUAL AO DASHBOARD) ===== */
         .sidebar {
             width: 260px;
             background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
             color: white;
             padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar h2 {
             margin-top: 0;
             text-align: center;
             font-weight: normal;
-            border-bottom: 1px solid rgba(255,255,255,0.3);
-            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .menu {
-            margin-top: 30px;
+        .sidebar-section {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .info-row {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            margin-bottom: 8px;
         }
 
-        .menu a {
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+        }
+
+        .system-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .system-box strong {
             color: white;
-            text-decoration: none;
-            padding: 10px 14px;
-            border-radius: 6px;
-            transition: background 0.2s;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 12px;
         }
 
-        .menu a:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        /* ===== MAIN ===== */
-        .content {
-            flex: 1;
-            padding: 30px 40px;
-        }
+        /* ===== MAIN CONTENT ===== */
+        .content { flex: 1; padding: 30px 40px; }
 
         .header {
             display: flex;
@@ -69,167 +98,115 @@
             margin-bottom: 30px;
         }
 
-        .header h1 {
-            margin: 0;
-            color: #7a1c1c;
-            font-weight: normal;
-        }
+        .header h1 { margin: 0; color: #7a1c1c; font-weight: 500; font-size: 1.8rem; }
 
-        .user {
-            background: #eee;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-
-        /* ===== CARDS ===== */
-        .cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-
-        .card h3 {
-            margin-top: 0;
-            color: #7a1c1c;
-            font-weight: normal;
-        }
-
-        .card span {
-            font-size: 32px;
-            font-weight: bold;
-        }
-
-        /* ===== ACTIONS ===== */
-        .actions {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-        }
-
+        /* ===== ACTION BOX ===== */
         .action-box {
             background: white;
-            padding: 25px;
+            padding: 30px;
             border-radius: 14px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            max-width: 600px;
         }
 
-        .action-box h3 {
-            margin-top: 0;
-            color: #7a1c1c;
-            font-weight: normal;
+        .action-box h3 { margin-top: 0; color: #7a1c1c; font-weight: 600; margin-bottom: 10px; }
+        .action-box p { color: #666; margin-bottom: 25px; font-size: 14px; }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
         }
 
-        .action-box p {
-            color: #666;
-            margin-bottom: 20px;
-        }
-
-        .action-box a {
-            display: block;
+        .button-grid a {
             text-decoration: none;
+            background: #f8f9fa;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .button-grid a:hover {
             background: #7a1c1c;
             color: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            transition: background 0.2s;
-            font-size: 14px;
-        }
-
-        .action-box a:hover {
-            background: #5f1414;
-        }
-
-        /* ===== LOGOUT ===== */
-        .logout {
-            margin-top: 40px;
-            text-align: right;
-        }
-
-        .logout a {
-            color: #7a1c1c;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .logout a:hover {
-            text-decoration: underline;
+            border-color: #7a1c1c;
+            transform: translateY(-2px);
         }
 
         .footer {
-            margin-top: 30px;
+            margin-top: 40px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            justify-content: flex-end;
         }
 
-        .footer a {
-            text-decoration: none;
+        .btn-back {
             color: #7a1c1c;
+            text-decoration: none;
             font-weight: bold;
+            font-size: 14px;
         }
 
-        .badge {
-            background: #eee;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-
-        @media (max-width: 900px) {
-            .actions {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 
 <body>
 
 <div class="layout">
-
     <aside class="sidebar">
-        <h2>Banco de Sangue</h2>
+        <h2>{{ nome_banco|default:"Banco de Sangue Norte" }}</h2>
+        
+        <div class="sidebar-section">
+            <p class="section-label">Utilizador</p>
+            <div class="admin-info">
+                <div class="info-row">
+                    <span class="online-indicator"></span>
+                    <span style="font-weight: bold;"> {{ request.user.username }}</span>
+                </div>
+            </div>
+          
+        </div>
 
         
+
+        <div class="sidebar-footer">
+            <div class="system-box">
+                <p><strong>{{ nome_banco }}</strong></p>
+                <p>Sistema de Gestão de Sangue</p>
+                <p style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                    Sessão ativa em: <br>{% now "d \d\e F, Y" %}
+                </p>
+            </div>
+        </div>
     </aside>
 
     <main class="content">
-
         <div class="header">
-            <h1>Listar dadores</h1>
-            <div class="user">👤 {{ request.user.username }}</div>
+            <h1>Listar Dadores</h1>
         </div>
 
-        <section class="actions">
-
-            <div class="action-box">
-                <h3>Menu</h3>
-                <p>Escolha o que pretende fazer:</p>
+        <section class="action-box">
+            <h3>Opções de Filtro</h3>
+            <p>Escolha como deseja visualizar a lista de dadores:</p>
+            
+            <div class="button-grid">
                 <a href="{% url 'dadores_tipo_sangue' %}"> Por tipo sanguíneo</a>
                 <a href="{% url 'dadores_apenas_ativos' %}"> Apenas dadores ativos</a>
             </div>
         </section>
 
-        <section class="actions">
-        </section>
-
-   <div class="footer">
-       <a href="{% url 'gestao_dadores' %}">← Voltar</a>
-       <span class="badge">Posto de Sangue</span>
-   </div>
-
-</main>
+        <div class="footer">
+            <a href="{% url 'gestao_dadores' %}" class="btn-back">← Voltar</a>
+        </div>
+    </main>
 </div>
 
 </body>

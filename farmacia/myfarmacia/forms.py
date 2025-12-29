@@ -122,10 +122,7 @@ PedidoLinhaFormSet = inlineformset_factory(
     extra=1,              # Começa com apenas 1 linha
     can_delete=True       # Permite apagar linhas
 )
-<<<<<<< HEAD
     
-=======
->>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 class DoacaoForm(forms.ModelForm):
     # Criamos um campo extra que NÃO existe no modelo Doacao
     nif_dador = forms.CharField(

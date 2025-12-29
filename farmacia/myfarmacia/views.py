@@ -17,10 +17,7 @@ from .serializers import (
     DadorSerializer, DoacaoSerializer, HospitalSerializer, 
     PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
 )
-<<<<<<< HEAD
-=======
 
->>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 
 # --- Navegação Base ---
 def home(request):
@@ -95,7 +92,10 @@ def pagina_admin(request):
         'num_alertas': num_alertas,
         'perigo_critico': perigo_critico,
         'pedidos_pendentes': Pedido.objects.filter(estado=True).count(),
-    }
+        'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
+        'ultimo_login': request.user.last_login, # Pega na data real do último login
+}
+    
 
     return render(request, 'admin_dashboard.html', context)
 
@@ -196,7 +196,10 @@ def criar_hospital_view(request):
 def pagina_hospital(request):
     if request.user.tipo != 'hospital':
         return redirect('login')
-    return render(request, 'hospital.html')
+    return render(request, 'hospital.html',{
+        'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
+        'ultimo_login': request.user.last_login, # Pega na data real do último login)
+    })
 
 
 @login_required
@@ -213,6 +216,8 @@ def pagina_posto(request):
     context = {
         'total_dadores': total_dadores,
         'total_doacoes': total_doacoes,
+        'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
+        'ultimo_login': request.user.last_login, # Pega na data real do último login
     }
     return render(request, 'posto.html', context)
 
@@ -333,14 +338,19 @@ def logout_view(request):
 @login_required
 def gestao_dadores(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'gestao_dadores.html')
+    return render(request, 'gestao_dadores.html',
+        {'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
+        'ultimo_login': request.user.last_login, # Pega na data real do último login
+        })
 
 
 @login_required
 def gestao_doacoes(request):
     # Lógica futura aqui. Por agora, apenas mostra a página.
-    return render(request, 'gestao_doacoes.html')
-
+    return render(request, 'gestao_doacoes.html',
+        {'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
+        'ultimo_login': request.user.last_login, # Pega na data real do último login
+        })
 
 @login_required
 def consultas_estatisticas(request):
@@ -664,8 +674,6 @@ def criar_pedido(request):
     })
 
 @login_required
-<<<<<<< HEAD
-=======
 def cancelar_pedido(request, pedido_id):
     """Cancela um pedido pendente mudando o estado para 'cancelado'"""
     # Procura o pedido pelo ID
@@ -706,7 +714,6 @@ def listar_pedidos_hospital(request):
         'titulo': "Histórico de Pedidos"
     })
 
->>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 def registar_doacao(request):
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado.")
@@ -793,7 +800,6 @@ def historico_tipo_sanguineo(request):
 def consultar_doacoes(request):
     doacoes = Doacao.objects.all().order_by('-data')
 
-<<<<<<< HEAD
     total_geral = Doacao.objects.count()
 
     por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id'))
@@ -809,12 +815,7 @@ def consultar_doacoes(request):
             'doacoes': doacoes,
             'titulo': "Consultar doações"
         })
-=======
-    return render(request, 'consultar_doacoes.html', {
-        'doacoes': doacoes,
-        'titulo': "Consultar doações"
-    })
->>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
+   
 
 
 

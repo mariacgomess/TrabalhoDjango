@@ -89,10 +89,7 @@ class Componente(models.TextChoices):
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
     PLASMA = "plasma", "Plasma"
     PLAQUETAS = "plaquetas", "Plaquetas"
-<<<<<<< HEAD
-=======
 
->>>>>>> 525cee6717d88b4c120c7774da6dc6b7e6b4e9f7
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)

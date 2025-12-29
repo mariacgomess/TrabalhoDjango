@@ -1,8 +1,13 @@
-{% extends 'base.html' %}
-
 {% block content %}
 
 <style>
+    /* Importação da fonte para garantir consistência */
+    body {
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+    }
+
     /* Fundo geral da página para destacar o cartão */
     .register-container {
         display: flex;
@@ -10,35 +15,38 @@
         align-items: flex-start;
         padding-top: 50px;
         min-height: 80vh;
+        font-family: "Segoe UI", Tahoma, sans-serif; /* Forçar fonte aqui */
     }
 
     /* O Cartão Branco */
     .register-card {
         background: white;
         width: 100%;
-        max-width: 500px; /* Largura máxima igual à da imagem */
+        max-width: 500px;
         padding: 40px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border-top: 5px solid #a83232; /* Topo vermelho */
+        border-radius: 12px; /* Ligeiramente mais arredondado para bater com o dashboard */
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        border-top: 5px solid #7a1c1c; /* Cor de vinho idêntica aos outros */
     }
 
     .register-card h2 {
-        color: #a83232;
+        color: #7a1c1c;
         text-align: center;
         margin-bottom: 30px;
-        font-weight: normal;
+        font-weight: 600; /* Peso médio para parecer profissional */
+        font-family: "Segoe UI", Tahoma, sans-serif;
     }
 
     .section-title {
-        font-size: 12px;
+        font-size: 11px;
         color: #999;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
         border-bottom: 1px solid #eee;
-        padding-bottom: 5px;
-        margin-bottom: 20px;
-        margin-top: 20px;
+        padding-bottom: 8px;
+        margin-bottom: 25px;
+        margin-top: 10px;
+        font-weight: bold;
     }
 
     /* Estilo dos Inputs */
@@ -49,80 +57,96 @@
     label {
         display: block;
         margin-bottom: 8px;
-        font-weight: bold;
-        color: #333;
+        font-weight: 600;
+        color: #444;
         font-size: 14px;
+        font-family: "Segoe UI", Tahoma, sans-serif;
     }
 
+    /* Seletores abrangentes para todos os campos do Django */
     input[type="text"],
     input[type="email"],
     input[type="password"],
     input[type="number"],
-    select {
+    input[type="date"],
+    input[type="tel"],
+    select,
+    textarea {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box; /* Garante que o padding não estraga a largura */
+        border-radius: 6px;
+        box-sizing: border-box;
         font-size: 14px;
+        font-family: "Segoe UI", Tahoma, sans-serif; /* Fonte nos inputs */
+        transition: border-color 0.3s;
     }
 
-    input:focus {
-        border-color: #a83232;
+    input:focus, select:focus {
+        border-color: #7a1c1c;
         outline: none;
-    }
-
-    .help-text {
-        font-size: 12px;
-        color: #666;
-        margin-top: 5px;
-    }
-
-    .help-text ul {
-        padding-left: 20px;
-        margin: 5px 0;
+        box-shadow: 0 0 8px rgba(122, 28, 28, 0.1);
     }
 
     .btn-submit {
         width: 100%;
-        padding: 12px;
-        background-color: #a83232;
+        padding: 14px;
+        background-color: #7a1c1c;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 8px;
         font-size: 16px;
         cursor: pointer;
         margin-top: 20px;
         font-weight: bold;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        transition: background 0.3s, transform 0.2s;
     }
 
     .btn-submit:hover {
-        background-color: #8c2828;
+        background-color: #5f1414;
+        transform: translateY(-1px);
     }
     
     .footer {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+        margin: 30px auto;
+        max-width: 500px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+    }
 
-        .footer a {
-            text-decoration: none;
-            color: #7a1c1c;
-            font-weight: bold;
-        }
+    .footer a {
+        text-decoration: none;
+        color: #7a1c1c;
+        font-weight: bold;
+        font-size: 14px;
+    }
 
-        .badge {
-            background: #eee;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
+    .footer a:hover {
+        text-decoration: underline;
+    }
 
-        .has-error input, .has-error select {
-            border: 2px solid #a83232 !important;
-}
+    .badge {
+        background: #e9ecef;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .error-text {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 5px;
+        font-weight: 500;
+    }
+
+    .has-error input, .has-error select {
+        border: 2px solid #dc3545 !important;
+    }
 </style>
 
 <div class="register-container">
@@ -135,23 +159,22 @@
             <div class="section-title">Dados Pessoais</div>
 
             {% for field in entidade_form %}
-                <div class="form-group">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                     {{ field }}
                     {% for error in field.errors %}
-                        <p style="color: red; font-size: 12px;">{{ error }}</p>
+                        <p class="error-text">{{ error }}</p>
                     {% endfor %}
                 </div>
             {% endfor %}
 
-            <button type="submit" class="btn-submit">Registar Dador</button>
+            <button type="submit" class="btn-submit"> Registar Dador</button>
         </form>
     </div>
 </div>
 
 <div class="footer">
     <a href="{% url 'gestao_dadores' %}">← Voltar</a>
-    <span class="badge">Posto de Sangue</span>
 </div>
 
 {% endblock %}

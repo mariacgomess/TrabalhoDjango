@@ -199,13 +199,127 @@
 
 <div class="layout">
     <aside class="sidebar">
-        <h2>Banco de Sangue</h2>
-    </aside>
+    <h2>{{ nome_banco }}</h2>
+    
+    <div class="sidebar-section">
+        <p class="section-label">Utilizador</p>
+        <div class="admin-info">
+            <span class="online-indicator"></span>
+            <span style="font-weight: bold;"> Administrador: {{ request.user.get_full_name|default:request.user.username }}</span>
+        </div>
+        <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 8px; line-height: 1.4;">
+            <strong>Último Login:</strong><br>
+            {{ ultimo_login|date:"d/m/Y H:i"|default:"Primeiro acesso" }}
+        </p>
+    </div>
+
+    <div class="sidebar-section">
+        <p class="section-label">Estado da Rede</p>
+        <div class="mini-stat">
+            <span>Urgência Stock:</span>
+            <span class="{% if perigo_critico %}text-danger{% else %}text-success{% endif %}">
+                {% if perigo_critico %}Crítico{% else %}Estável{% endif %}
+            </span>
+        </div>
+        <div class="mini-stat">
+            <span>Pedidos:</span>
+            <span>{{ pedidos_pendentes }} pendentes</span>
+        </div>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="system-box">
+            <p><strong>{{ nome_banco }}</strong></p>
+            <p>Sistema de Gestão de Sangue</p>
+            <p style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                Sessão ativa em: <br>{% now "d \d\e F, Y" %}
+            </p>
+        </div>
+    </div>
+</aside>
+
+<style>
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        padding: 25px 20px;
+    }
+
+    .sidebar h2 {
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: center;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+    }
+
+    .sidebar-section {
+        padding: 20px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .section-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+        letter-spacing: 1.5px;
+        margin-bottom: 15px;
+        font-weight: 800;
+    }
+
+    .admin-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .online-indicator {
+        width: 10px;
+        height: 10px;
+        background: #2ecc71;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+    }
+
+    .mini-stat {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        margin-bottom: 10px;
+        color: rgba(255,255,255,0.9);
+    }
+
+    .text-danger { color: #ff7675; font-weight: bold; }
+    .text-success { color: #55efc4; font-weight: bold; }
+
+    .sidebar-footer {
+        margin-top: auto;
+    }
+
+    .system-box {
+        background: rgba(0,0,0,0.2);
+        padding: 15px;
+        border-radius: 12px;
+        font-size: 11px;
+        color: rgba(255,255,255,0.6);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .system-box strong {
+        color: white;
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+    }
+</style>
 
     <main class="content">
         <div class="header">
             <h1>Gestão Centralizada</h1>
-            <div class="user-badge">👤 Administrador: <strong>{{ request.user.username }}</strong></div>
+        
         </div>
 
         <section class="cards">
@@ -241,7 +355,7 @@
                 <div class="button-grid">
                     <a href="{% url 'stock_total_central' %}" class="btn-main-monitor {% if perigo_critico %}modo-ruptura{% endif %}">
                         {% if perigo_critico %}
-                             RUTURA DETECTADA: VER STOCK
+                            Stock crítico detetado: Ver stock
                         {% else %}
                              Monitor de Stock Global
                         {% endif %}
