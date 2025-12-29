@@ -27,13 +27,21 @@ class DoacaoAdmin(admin.ModelAdmin):
 # Permite gerir os itens do pedido (Linhas) dentro da página do Pedido
 class LinhaPedidoInline(admin.TabularInline):
     model = LinhaPedido
-    extra = 1
+    extra = 0 # Alterado para 0 para um visual mais limpo
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('hospital', 'data', 'estado', 'banco')
+    # list_display alterado para usar a função que mostra o nome amigável do estado
+    list_display = ('id', 'hospital', 'data', 'exibir_estado', 'banco')
     list_filter = ('estado', 'banco')
     inlines = [LinhaPedidoInline]
+
+    def exibir_estado(self, obj):
+        # Esta função garante que aparece "Concluído" em vez de "concluido"
+        return obj.get_estado_display()
+    
+    # Define o título da coluna no painel
+    exibir_estado.short_description = 'Estado'
 
 @admin.register(PostoRecolha)
 class PostoRecolhaAdmin(admin.ModelAdmin):

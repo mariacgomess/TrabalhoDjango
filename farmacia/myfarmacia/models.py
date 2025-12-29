@@ -122,10 +122,20 @@ class Hospital(models.Model):
     def __str__(self):
         return f"{self.nome} - {self.telefone} - {self.morada} - {self.codigoPostal}" 
     
+
+class EstadoPedido(models.TextChoices):
+    ATIVO = "ativo", "Ativo"
+    CANCELADO = "cancelado", "Cancelado"
+    CONCLUIDO = "concluido", "Concluído"
+ 
 class Pedido(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.DO_NOTHING, related_name='listaPedido')
     data = models.DateField(auto_now_add=True) # Adicione auto_now_add=True
-    estado = models.BooleanField(default=True)
+    estado = models.CharField(
+        max_length=20, 
+        choices=EstadoPedido.choices, 
+        default=EstadoPedido.ATIVO
+    )
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='listaPedidos')
 
     def __str__(self):
@@ -135,11 +145,12 @@ class LinhaPedido(models.Model):
     tipo = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     quantidade = models.IntegerField()
-    pedido = models.ForeignKey(Pedido, on_delete=models.DO_NOTHING,related_name='itens')
+    # Alterado para CASCADE para permitir a eliminação pelo Admin
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itens')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='linhaPedido')
 
     def __str__(self):
-        return f"{self.tipo} - {self.componente} - {self.quantidade} - {self.pedido}" 
+        return f"{self.tipo} - {self.componente} - {self.quantidade} - {self.pedido}"
 
 class Utilizador(AbstractUser):
     TIPOS_UTILIZADOR = (

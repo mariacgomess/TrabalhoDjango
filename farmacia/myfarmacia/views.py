@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -641,40 +642,45 @@ def criar_pedido(request):
     })
 
 @login_required
+def cancelar_pedido(request, pedido_id):
+    """Cancela um pedido pendente mudando o estado para 'cancelado'"""
+    # Procura o pedido pelo ID
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    # Obtém o perfil do hospital logado
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_logado = perfil.hospital if perfil else None
+
+    # Verifica se o pedido pertence ao hospital logado e se ainda está ativo
+    if hospital_logado and pedido.hospital == hospital_logado:
+        if pedido.estado == "ativo":
+            pedido.estado = "cancelado" # Usa a string definida no teu EstadoPedido
+            pedido.save()
+            messages.success(request, f"Pedido #{pedido.id} cancelado com sucesso!")
+        else:
+            messages.warning(request, "Apenas pedidos ativos podem ser cancelados.")
+    else:
+        messages.error(request, "Não tem permissão para cancelar este pedido.")
+
+    return redirect('listar_pedidos') # Nome definido no teu urls.py
+
+@login_required
 def listar_pedidos_hospital(request):
+    """Lista o histórico de pedidos do hospital logado"""
     if request.user.tipo != 'hospital':
         return redirect('home')
 
-    # Obtemos o hospital do utilizador logado
+    # Obtém a instância do hospital associada ao utilizador
     perfil = getattr(request.user, 'perfil_hospital', None)
     hospital_instancia = perfil.hospital if perfil else None
 
-    # Procuramos todos os pedidos deste hospital, ordenados pelo mais recente
-    # O 'itens' vem do related_name que definiste no model LinhaPedido
+    # Carrega os pedidos e as respetivas linhas (itens) para evitar múltiplas consultas
     pedidos = Pedido.objects.filter(hospital=hospital_instancia).prefetch_related('itens').order_by('-data')
 
     return render(request, 'listar_pedidos.html', {
         'pedidos': pedidos,
         'titulo': "Histórico de Pedidos"
     })
-
-
-
-def cancelar_pedido(request, pedido_id):
-    # Procura o pedido ou dá erro 404 se não existir
-    pedido = get_object_or_404(Pedido, id=pedido_id)
-    
-    # Segurança: Verifica se o pedido pertence mesmo ao hospital logado
-    # (Ajusta 'hospital_instancia' conforme a tua lógica de perfil)
-    perfil = getattr(request.user, 'perfil_hospital', None)
-    if pedido.hospital == perfil.hospital:
-        pedido.estado = False  # Muda de True para False
-        pedido.save()
-        messages.success(request, f"Pedido #{pedido.id} cancelado com sucesso!")
-    else:
-        messages.error(request, "Não tens permissão para cancelar este pedido.")
-
-    return redirect('listar_pedidos') # Nome da URL da tua lista
 
 def registar_doacao(request):
     if request.user.tipo != 'posto':

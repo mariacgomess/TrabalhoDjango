@@ -39,7 +39,6 @@
 
     .container { padding: 40px; max-width: 1100px; margin: auto; }
 
-    /* Estética dos Cards de Pedidos */
     .pedido-card {
         background: white;
         padding: 25px;
@@ -58,17 +57,16 @@
         margin-bottom: 15px;
     }
 
-    .pedido-titulo { font-size: 18px; color: #4d0f0f; }
-    
-    .status-ativo { color: #28a745; font-weight: bold; background: #e8f5e9; padding: 4px 8px; border-radius: 4px; }
-    .status-cancelado { color: #6c757d; font-weight: bold; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; }
+    /* Cores dos Estados */
+    .status-badge { font-weight: bold; padding: 6px 12px; border-radius: 4px; font-size: 13px; text-transform: uppercase; }
+    .status-ativo { color: #28a745; background: #e8f5e9; }
+    .status-concluido { color: #007bff; background: #e7f1ff; }
+    .status-cancelado { color: #dc3545; background: #ffeaea; }
 
-    /* Tabela de Itens */
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th { text-align: left; padding: 10px; background: #f8f9fa; color: #7a1c1c; border-bottom: 1px solid #ddd; font-size: 14px; }
     td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
 
-    /* Botão Cancelar */
     .btn-cancelar {
         background: #dc3545;
         color: white;
@@ -77,12 +75,15 @@
         border-radius: 6px;
         font-size: 13px;
         transition: background 0.2s;
-        margin-left: 15px;
+        margin-left: 10px;
     }
 
     .btn-cancelar:hover { background: #a71d2a; }
 
-    .no-pedidos { text-align: center; padding: 50px; color: #666; }
+    .messages { list-style: none; padding: 0; margin-bottom: 20px; }
+    .messages li { padding: 12px; border-radius: 6px; margin-bottom: 10px; font-weight: bold; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
 </style>
 
 </head>
@@ -98,25 +99,35 @@
     </header>
 
     <div class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         {% if pedidos %}
             {% for pedido in pedidos %}
                 <div class="pedido-card">
                     <div class="pedido-header">
-                        <div class="pedido-titulo">
+                        <div>
                             <strong>Pedido #{{ pedido.id }}</strong> 
                             <span style="font-size: 14px; color: #666; margin-left: 10px;">Data: {{ pedido.data|date:"d/m/Y" }}</span>
                         </div>
                         
                         <div>
-                            {% if pedido.estado %}
-                                <span class="status-ativo">Ativo</span>
+                            {% if pedido.estado == "ativo" %}
+                                <span class="status-badge status-ativo">Pendente</span>
                                 <a href="{% url 'cancelar_pedido' pedido.id %}" 
                                    class="btn-cancelar" 
                                    onclick="return confirm('Tem a certeza que deseja cancelar este pedido?')">
-                                   🗑️ Cancelar Pedido
+                                   🗑️ Cancelar
                                 </a>
+                            {% elif pedido.estado == "concluido" %}
+                                <span class="status-badge status-concluido">Concluído</span>
                             {% else %}
-                                <span class="status-cancelado">Cancelado</span>
+                                <span class="status-badge status-cancelado">Cancelado</span>
                             {% endif %}
                         </div>
                     </div>
@@ -138,7 +149,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="3" style="text-align: center; color: #999;">Este pedido não contém itens registrados.</td>
+                                    <td colspan="3" style="text-align: center; color: #999;">Sem itens registados.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -146,9 +157,8 @@
                 </div>
             {% endfor %}
         {% else %}
-            <div class="card no-pedidos">
+            <div style="text-align: center; padding: 50px; color: #666;">
                 <h3>Ainda não efetuou nenhum pedido.</h3>
-                <p>Clique em "Criar Novo Pedido" para começar.</p>
             </div>
         {% endif %}
     </div>
