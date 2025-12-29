@@ -31,6 +31,7 @@ class Genero(models.TextChoices):
     MASCULINO = "M", "Masculino"
 
 class Dador(models.Model):
+    # ... (mantenha os campos conforme o seu código)
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
     nif = models.CharField(max_length=10, unique=True)
@@ -80,10 +81,11 @@ class Dador(models.Model):
     @property
     def pode_doar(self):
         return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
-    
-    def __str__(self):
-        return f"{self.nome} - {self.dataNascimento} - {self.nif}- {self.genero} - {self.peso} - {self.telefone} - {self.tipo} - {self.ativo} - {self.ultimaDoacao}"
 
+    def __str__(self):
+        # CORREÇÃO: Usar tipo_sangue em vez de tipo
+        return f"{self.nome} - {self.nif} - {self.tipo_sangue}"
+    
 class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
@@ -141,11 +143,12 @@ class Pedido(models.Model):
     def __str__(self):
         return f"{self.hospital} - {self.data} - {self.estado}" 
     
+
 class LinhaPedido(models.Model):
     tipo = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     quantidade = models.IntegerField()
-    # Alterado para CASCADE para permitir a eliminação pelo Admin
+    # CORREÇÃO: CASCADE para permitir apagar pedidos no Admin
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itens')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='linhaPedido')
 
