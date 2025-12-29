@@ -1,7 +1,13 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+<<<<<<< HEAD
+from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador
+from django.forms import inlineformset_factory
+from .models import Pedido, LinhaPedido
+=======
 from .models import Utilizador, PostoRecolha, Hospital, Banco, Dador, Doacao
 from datetime import date
+>>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
 
 # Formulário para criar a conta de login
 class CriarUtilizadorForm(UserCreationForm):
@@ -90,6 +96,37 @@ class DadorForm(forms.ModelForm):
             raise forms.ValidationError("Este NIF já se encontra registado no sistema.")
             
         return nif
+<<<<<<< HEAD
+
+# forms.py
+# 1. Formulário para o cabeçalho do Pedido (Data)
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = []
+
+# 2. Formulário para cada linha individual
+class LinhaPedidoForm(forms.ModelForm):
+    class Meta:
+        model = LinhaPedido
+        fields = ['tipo', 'componente', 'quantidade']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove os valores padrão para não salvar lixo se o utilizador não preencher
+        self.fields['tipo'].initial = None
+        self.fields['componente'].initial = None
+        self.fields['quantidade'].required = False
+
+# 3. O Formset que une o Pedido às suas várias Linhas
+PedidoLinhaFormSet = inlineformset_factory(
+    Pedido, 
+    LinhaPedido,
+    form=LinhaPedidoForm,
+    extra=1,              # Começa com apenas 1 linha
+    can_delete=True       # Permite apagar linhas
+)
+=======
     
 class DoacaoForm(forms.ModelForm):
     # Criamos um campo extra que NÃO existe no modelo Doacao
@@ -132,3 +169,4 @@ class DoacaoForm(forms.ModelForm):
         if commit:
             doacao.save()
         return doacao
+>>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927

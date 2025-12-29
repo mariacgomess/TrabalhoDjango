@@ -88,7 +88,10 @@ class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
     PLASMA = "plasma", "Plasma"
+<<<<<<< HEAD
+=======
     PLAQUETAS = "plaquetas", "Plaquetas"
+>>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)

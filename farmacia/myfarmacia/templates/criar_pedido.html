@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Pedido | Banco de Sangue</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 30px 40px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    header h1 { margin: 0; font-weight: normal; }
+    header p { margin: 6px 0 20px 0; opacity: 0.9; }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 20px;
+        font-size: 15px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+    nav a:hover { background: rgba(255,255,255,0.15); }
+
+    .container { padding: 40px; max-width: 1000px; margin: auto; }
+
+    /* Estética do Card de Formulário */
+    .card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+    }
+
+    h3 { color: #7a1c1c; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; margin-top: 0; }
+
+    /* Estilo da Tabela Dinâmica */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    
+    th { 
+        text-align: left; 
+        padding: 12px; 
+        background: #f8f9fa; 
+        color: #7a1c1c; 
+        border-bottom: 2px solid #7a1c1c; 
+    }
+
+    td { padding: 12px; border-bottom: 1px solid #eee; }
+
+    input, select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    /* Botões */
+    .btn-submit {
+        background: #7a1c1c;
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+        transition: background 0.2s;
+    }
+
+    .btn-submit:hover { background: #4d0f0f; }
+
+    .btn-add {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 15px;
+    }
+
+    .btn-remover {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .delete-checkbox { display: none; } /* Esconde o checkbox padrão do Django */
+</style>
+
+</head>
+<body>
+
+    <header>
+        <h1>Banco de Sangue</h1>
+        <p>Hospital: {{ request.user.username }}</p>
+        <nav>
+            <a href="{% url 'pagina_hospital' %}">Voltar</a>
+            <a href="#">Ajuda</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <form method="post" id="pedido-form">
+                {% csrf_token %}
+                
+    <div class="form-group">
+        <h3>Informações do Pedido</h3>
+        <p><strong>Hospital:</strong> {{ request.user.username }}</p>
+        <p><strong>Data do Pedido:</strong> {% now "d/m/Y" %}</p> </div>
+
+                <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+                <h3>Lista de Componentes</h3>
+                {{ formset.management_form }}
+                
+                <table id="tabela-linhas">
+                    <thead>
+                        <tr>
+                            <th>Grupo Sanguíneo</th>
+                            <th>Componente</th>
+                            <th>Quantidade</th>
+                            <th style="width: 80px; text-align: center;">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for form_linha in formset %}
+                            <tr class="linha-form">
+                                <td>{{ form_linha.tipo }}</td>
+                                <td>{{ form_linha.componente }}</td>
+                                <td>{{ form_linha.quantidade }}</td>
+                                <td style="text-align: center;">
+                                    {% if formset.can_delete %}
+                                        <span class="delete-checkbox">{{ form_linha.DELETE }}</span>
+                                    {% endif %}
+                                    <button type="button" class="btn-remover" onclick="removerLinha(this)">🗑️</button>
+                                </td>
+                                {% for hidden in form_linha.hidden_fields %} {{ hidden }} {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <button type="button" id="add-linha" class="btn-add">+ Adicionar Outro Componente</button>
+                <button type="submit" class="btn-submit">Finalizar e Enviar Pedido</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('add-linha').onclick = function() {
+            // O prefixo 'itens' deve ser igual ao related_name definido no Model LinhaPedido
+            let totalForms = document.getElementById('id_itens-TOTAL_FORMS');
+            let currentCount = parseInt(totalForms.value);
+            
+            // Clona a primeira linha da tabela
+            let rows = document.querySelectorAll('.linha-form');
+            let template = rows[0].cloneNode(true);
+            
+            // Limpa os valores e atualiza os índices dos nomes/IDs
+            template.querySelectorAll('input, select').forEach(input => {
+                // Substitui o índice 0 pelo índice atual em todos os atributos
+                input.name = input.name.replace('-0-', `-${currentCount}-`);
+                input.id = input.id.id ? input.id.replace('-0-', `-${currentCount}-`) : "";
+                
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+
+            // Garante que a nova linha esteja visível
+            template.style.display = '';
+            document.querySelector('#tabela-linhas tbody').appendChild(template);
+            
+            // Incrementa o contador total de formulários para o Django
+            totalForms.value = currentCount + 1;
+        };
+
+        function removerLinha(btn) {
+            let row = btn.closest('.linha-form');
+            let allRows = document.querySelectorAll('.linha-form:not([style*="display: none"])');
+            
+            // Impede remover se for a única linha visível
+            if (allRows.length <= 1) {
+                alert("O pedido deve ter pelo menos um componente.");
+                return;
+            }
+
+            let deleteInput = row.querySelector('input[name$="-DELETE"]');
+            if (deleteInput) {
+                deleteInput.checked = true; // Marca para o Django ignorar/apagar no servidor
+                row.style.display = 'none';  // Esconde visualmente
+            } else {
+                row.remove(); // Se for uma linha adicionada dinamicamente e não salva, remove direto
+            }
+        }
+    </script>
+</body>
+</html>
