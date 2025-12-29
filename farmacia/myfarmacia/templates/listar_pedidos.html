@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} | Banco de Sangue</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 30px 40px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    header h1 { margin: 0; font-weight: normal; }
+    header p { margin: 6px 0 20px 0; opacity: 0.9; }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 20px;
+        font-size: 15px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+    nav a:hover { background: rgba(255,255,255,0.15); }
+
+    .container { padding: 40px; max-width: 1100px; margin: auto; }
+
+    /* Estética dos Cards de Pedidos */
+    .pedido-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+        border-left: 6px solid #7a1c1c;
+    }
+
+    .pedido-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #f4f6f9;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    .pedido-titulo { font-size: 18px; color: #4d0f0f; }
+    
+    .status-ativo { color: #28a745; font-weight: bold; background: #e8f5e9; padding: 4px 8px; border-radius: 4px; }
+    .status-cancelado { color: #6c757d; font-weight: bold; background: #f8f9fa; padding: 4px 8px; border-radius: 4px; }
+
+    /* Tabela de Itens */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { text-align: left; padding: 10px; background: #f8f9fa; color: #7a1c1c; border-bottom: 1px solid #ddd; font-size: 14px; }
+    td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+
+    /* Botão Cancelar */
+    .btn-cancelar {
+        background: #dc3545;
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: background 0.2s;
+        margin-left: 15px;
+    }
+
+    .btn-cancelar:hover { background: #a71d2a; }
+
+    .no-pedidos { text-align: center; padding: 50px; color: #666; }
+</style>
+
+</head>
+<body>
+
+    <header>
+        <h1>Banco de Sangue</h1>
+        <p>{{ titulo }} - Hospital: {{ request.user.username }}</p>
+        <nav>
+            <a href="{% url 'pagina_hospital' %}">Voltar ao Painel</a>
+            <a href="{% url 'criar_pedido' %}">Criar Novo Pedido</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        {% if pedidos %}
+            {% for pedido in pedidos %}
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <div class="pedido-titulo">
+                            <strong>Pedido #{{ pedido.id }}</strong> 
+                            <span style="font-size: 14px; color: #666; margin-left: 10px;">Data: {{ pedido.data|date:"d/m/Y" }}</span>
+                        </div>
+                        
+                        <div>
+                            {% if pedido.estado %}
+                                <span class="status-ativo">Ativo</span>
+                                <a href="{% url 'cancelar_pedido' pedido.id %}" 
+                                   class="btn-cancelar" 
+                                   onclick="return confirm('Tem a certeza que deseja cancelar este pedido?')">
+                                   🗑️ Cancelar Pedido
+                                </a>
+                            {% else %}
+                                <span class="status-cancelado">Cancelado</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo Sanguíneo</th>
+                                <th>Componente</th>
+                                <th>Quantidade Pedida</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for linha in pedido.itens.all %}
+                                <tr>
+                                    <td><strong>{{ linha.tipo }}</strong></td>
+                                    <td>{{ linha.get_componente_display }}</td>
+                                    <td>{{ linha.quantidade }} unidades</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #999;">Este pedido não contém itens registrados.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="card no-pedidos">
+                <h3>Ainda não efetuou nenhum pedido.</h3>
+                <p>Clique em "Criar Novo Pedido" para começar.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

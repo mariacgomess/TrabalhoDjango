@@ -88,10 +88,8 @@ class Componente(models.TextChoices):
     SANGUE = "sangue", "Sangue"
     GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
     PLASMA = "plasma", "Plasma"
-<<<<<<< HEAD
-=======
     PLAQUETAS = "plaquetas", "Plaquetas"
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
+
 
 class PostoRecolha(models.Model):
     nome = models.CharField(max_length=100)
@@ -126,7 +124,7 @@ class Hospital(models.Model):
     
 class Pedido(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.DO_NOTHING, related_name='listaPedido')
-    data = models.DateField()
+    data = models.DateField(auto_now_add=True) # Adicione auto_now_add=True
     estado = models.BooleanField(default=True)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='listaPedidos')
 

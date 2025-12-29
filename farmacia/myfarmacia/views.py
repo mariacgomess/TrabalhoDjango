@@ -2,19 +2,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-<<<<<<< HEAD
-from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, PedidoForm, PedidoLinhaFormSet
-=======
 from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital, Pedido, LinhaPedido
-from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
+from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm, PedidoForm, PedidoLinhaFormSet
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
 from datetime import date
 from django.utils import timezone
 from datetime import timedelta
 from django.db.models import Count
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .serializers import (
+    DadorSerializer, DoacaoSerializer, HospitalSerializer, 
+    PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
+)
+
 
 # --- Navegação Base ---
 def home(request):
@@ -575,7 +577,6 @@ def consultar_hospital(request):
     })
 
 @login_required
-<<<<<<< HEAD
 def criar_pedido(request):
     if request.user.tipo != 'hospital':
         return redirect('home')
@@ -622,7 +623,42 @@ def criar_pedido(request):
         'titulo': "Novo Pedido de Sangue"
     })
 
-=======
+@login_required
+def listar_pedidos_hospital(request):
+    if request.user.tipo != 'hospital':
+        return redirect('home')
+
+    # Obtemos o hospital do utilizador logado
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital_instancia = perfil.hospital if perfil else None
+
+    # Procuramos todos os pedidos deste hospital, ordenados pelo mais recente
+    # O 'itens' vem do related_name que definiste no model LinhaPedido
+    pedidos = Pedido.objects.filter(hospital=hospital_instancia).prefetch_related('itens').order_by('-data')
+
+    return render(request, 'listar_pedidos.html', {
+        'pedidos': pedidos,
+        'titulo': "Histórico de Pedidos"
+    })
+
+
+
+def cancelar_pedido(request, pedido_id):
+    # Procura o pedido ou dá erro 404 se não existir
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    
+    # Segurança: Verifica se o pedido pertence mesmo ao hospital logado
+    # (Ajusta 'hospital_instancia' conforme a tua lógica de perfil)
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    if pedido.hospital == perfil.hospital:
+        pedido.estado = False  # Muda de True para False
+        pedido.save()
+        messages.success(request, f"Pedido #{pedido.id} cancelado com sucesso!")
+    else:
+        messages.error(request, "Não tens permissão para cancelar este pedido.")
+
+    return redirect('listar_pedidos') # Nome da URL da tua lista
+
 def registar_doacao(request):
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado.")
@@ -712,19 +748,10 @@ def consultar_doacoes(request):
         'doacoes': doacoes,
         'titulo': "Consultar doações"
     })
->>>>>>> 4d2ea59594878bfe2252ed6ef14e654cbb6d6927
 
 
 
-################################################################################################
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .serializers import (
-    DadorSerializer, DoacaoSerializer, HospitalSerializer, 
-    PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
-)
 
-# --- VIEWSETS PARA API (REST FRAMEWORK) ---
 
 class BancoViewSet(viewsets.ModelViewSet):
     queryset = Banco.objects.all()

@@ -19,48 +19,38 @@
         header {
             background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
             color: white;
-            padding: 30px 40px;
+            padding: 50px 20px;
             box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            text-align: center; /* Cabeçalho centrado */
         }
 
         header h1 {
             margin: 0;
-            font-weight: normal;
+            font-weight: 600;
+            font-size: 2.5rem;
         }
 
         header p {
-            margin: 6px 0 20px 0;
+            margin: 10px 0 0 0;
             opacity: 0.9;
-        }
-
-        nav a {
-            color: white;
-            margin-right: 20px;
-            text-decoration: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            transition: background 0.2s;
-            font-size: 15px;
-        }
-
-        nav a:hover {
-            background: rgba(255,255,255,0.15);
+            font-size: 1.1rem;
         }
 
         .login-box {
-            width: 340px;
-            margin: 80px auto;
+            width: 360px;
+            margin: 60px auto;
             background: white;
-            padding: 30px;
+            padding: 35px;
             border-radius: 14px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .login-box h2 {
             margin-top: 0;
             text-align: center;
             color: #7a1c1c;
-            font-weight: normal;
+            font-weight: 600;
+            margin-bottom: 25px;
         }
 
         .login-box label {
@@ -68,27 +58,28 @@
             margin-top: 15px;
             font-size: 14px;
             color: #555;
+            font-weight: 500;
         }
 
         .login-box input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin-top: 6px;
-            margin-bottom: 10px;
             border-radius: 6px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             font-size: 14px;
         }
 
         .login-box button {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 25px;
             padding: 12px;
             background: #7a1c1c;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
             transition: background 0.2s;
         }
@@ -97,9 +88,25 @@
             background: #5f1414;
         }
 
-        .login-box ul {
-            padding: 0;
-            margin-bottom: 15px;
+        /* ESTILO DO LINK VOLTAR ABAIXO DO BOTÃO */
+        .back-container {
+            margin-top: 25px;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        .back-container a {
+            color: #7a1c1c;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .back-container a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
         }
 
         .login-box li {
@@ -108,10 +115,11 @@
             color: #7a1c1c;
             padding: 10px;
             border-radius: 6px;
-            font-weight: bold;
-            text-align: center;
             margin-bottom: 8px;
+            font-size: 13px;
+            text-align: center;
         }
+        ul { padding: 0; }
     </style>
 </head>
 
@@ -120,9 +128,6 @@
 <header>
     <h1>Banco de Sangue</h1>
     <p>Bem-vindo/a!</p>
-    <nav>
-        <a href="/">Voltar à página inicial</a>
-    </nav>
 </header>
 
 <div class="login-box">
@@ -131,9 +136,7 @@
     {% if messages %}
         <ul>
             {% for message in messages %}
-                <li>
-                    {{ message }}
-                </li>
+                <li>{{ message }}</li>
             {% endfor %}
         </ul>
     {% endif %}
@@ -142,13 +145,17 @@
         {% csrf_token %}
 
         <label>Username</label>
-        <input type="text" name="username" required>
+        <input type="text" name="username" required placeholder="Utilizador">
 
         <label>Password</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required placeholder="Senha">
 
         <button type="submit">Entrar</button>
     </form>
+
+    <div class="back-container">
+        <a href="/">← Voltar à página inicial</a>
+    </div>
 </div>
 
 </body>
