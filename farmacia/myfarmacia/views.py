@@ -885,28 +885,44 @@ def historico_tipo_sanguineo(request):
     })
 
 def consultar_doacoes(request):
-    doacoes = Doacao.objects.all().order_by('-data')
-
-    total_geral = Doacao.objects.count()
-
+    # Usamos select_related para carregar os dados do dador de forma eficiente
+    doacoes = Doacao.objects.all().select_related('dador').order_by('-data')
+    
+    total_geral = doacoes.count()
+    
+    # Se precisares destas estatísticas para esta página, o cálculo continua aqui:
     por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id'))
-
     for item in por_tipo:
-        if total_geral > 0:
-            # Cálculo da percentagem
-            item['percentagem'] = (item['qtd'] / total_geral) * 100
-        else:
-            item['percentagem'] = 0
+        item['percentagem'] = (item['qtd'] / total_geral * 100) if total_geral > 0 else 0
 
-        return render(request, 'consultar_doacoes.html', {
-            'doacoes': doacoes,
-            'titulo': "Consultar doações"
-        })
+    # IMPORTANTE: O return deve estar fora do loop 'for'
+    return render(request, 'consultar_doacoes.html', {
+        'doacoes': doacoes,
+        'titulo': "Consultar doações",
+        'por_tipo': por_tipo # Caso queiras mostrar o resumo algures
+    })
    
 
 
 
+#######################################################33
 
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import IsAuthenticated
+from .models import (
+    Utilizador, Banco, PostoRecolha, Hospital, 
+    Dador, Doacao, Pedido, LinhaPedido
+)
+from .serializers import (
+    UtilizadorSerializer, BancoSerializer, PostoRecolhaSerializer, 
+    HospitalSerializer, DadorSerializer, DoacaoSerializer, 
+    PedidoSerializer, LinhaPedidoSerializer
+)
+
+class UtilizadorViewSet(viewsets.ModelViewSet):
+    queryset = Utilizador.objects.all()
+    serializer_class = UtilizadorSerializer
+    permission_classes = [IsAuthenticated] # Ou IsAdminUser para segurança extra
 
 class BancoViewSet(viewsets.ModelViewSet):
     queryset = Banco.objects.all()
@@ -919,21 +935,32 @@ class PostoRecolhaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class DadorViewSet(viewsets.ModelViewSet):
-    queryset = Dador.objects.all()
     serializer_class = DadorSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Se quiseres filtrar dadores por banco do utilizador logado:
         user = self.request.user
-        if user.tipo == 'posto':
+        # Se for admin, vê tudo. Se for posto, vê apenas os dadores do banco dele.
+        if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             return Dador.objects.filter(banco=user.perfil_posto.posto.banco)
-        return Dador.objects.all()
+        elif user.tipo == 'admin':
+            return Dador.objects.all()
+        return Dador.objects.none() # Hospital não deve ver dadores
 
 class DoacaoViewSet(viewsets.ModelViewSet):
     queryset = Doacao.objects.all()
     serializer_class = DoacaoSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Associa automaticamente o posto do utilizador logado à doação
+        if self.request.user.tipo == 'posto':
+            serializer.save(
+                posto=self.request.user.perfil_posto.posto,
+                banco=self.request.user.perfil_posto.posto.banco
+            )
+        else:
+            serializer.save()
 
 class HospitalViewSet(viewsets.ModelViewSet):
     queryset = Hospital.objects.all()
@@ -941,21 +968,25 @@ class HospitalViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class PedidoViewSet(viewsets.ModelViewSet):
-    queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        #Hospital só vê os seus pedidos
-        if user.tipo == 'hospital':
+        if user.tipo == 'hospital' and hasattr(user, 'perfil_hospital'):
             return Pedido.objects.filter(hospital=user.perfil_hospital.hospital)
-        return Pedido.objects.all()
+        elif user.tipo == 'admin':
+            return Pedido.objects.all()
+        return Pedido.objects.none()
 
     def perform_create(self, serializer):
-        # Se for um hospital a criar, associa automaticamente o hospital dele ao pedido
-        if self.request.user.tipo == 'hospital':
-            serializer.save(hospital=self.request.user.perfil_hospital.hospital)
+        user = self.request.user
+        if user.tipo == 'hospital':
+            # Associa o hospital e o banco automaticamente para evitar fraudes
+            serializer.save(
+                hospital=user.perfil_hospital.hospital,
+                banco=user.perfil_hospital.hospital.banco
+            )
         else:
             serializer.save()
 

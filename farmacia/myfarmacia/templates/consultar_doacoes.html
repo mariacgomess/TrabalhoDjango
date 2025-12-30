@@ -3,148 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ titulo }} | Banco de Sangue</title>
-
     <style>
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Tahoma, sans-serif;
-            background: #f4f6f9;
-            color: #333;
+        /* Mantendo os teus estilos e ajustando a largura para a nova coluna */
+        body { margin: 0; font-family: "Segoe UI", Tahoma, sans-serif; background: #f4f6f9; color: #333; }
+        
+        .container { 
+            max-width: 850px; /* Aumentado para caber mais colunas */
+            margin: 40px auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 14px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
         }
 
-        .container {
-            max-width: 900px;
-            margin: 50px auto;
-            background: white;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        h2 { color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 10px; font-weight: normal; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        thead { background: #7a1c1c; color: white; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+        
+        /* Destaque para o Tipo de Sangue */
+        .blood-badge { 
+            font-weight: bold; 
+            color: #7a1c1c; 
+            background: #fff5f5; 
+            padding: 2px 8px; 
+            border-radius: 6px; 
+            border: 1px solid #f8d7da;
         }
 
-        h2 {
-            margin-top: 0;
-            color: #7a1c1c;
-            border-bottom: 2px solid #7a1c1c;
-            padding-bottom: 10px;
-            font-weight: normal;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 30px;
-        }
-
-        thead {
-            background: #7a1c1c;
-            color: white;
-        }
-
-        th, td {
-            padding: 14px 16px;
-            text-align: left;
-        }
-
-        th:last-child,
-        td:last-child {
-            text-align: right;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid #eee;
-        }
-
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-        }
-
-        .footer {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .footer a {
-            text-decoration: none;
-            color: #7a1c1c;
-            font-weight: bold;
-        }
-
-        .badge {
-            background: #eee;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-
-        .back:hover {
-            text-decoration: underline;
-        }
-
-        .badge {
-            background: #eee;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
+        .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .footer a { text-decoration: none; color: #7a1c1c; font-weight: bold; }
+        .badge { background: #eee; padding: 6px 12px; border-radius: 20px; font-size: 13px; }
     </style>
 </head>
-
 <body>
 
-    <div class="container" style="max-width: 600px; margin: 40px auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);">
-
-        <h2 style="color: #7a1c1c; border-bottom: 2px solid #7a1c1c; padding-bottom: 10px;">{{ titulo }}</h2>
+    <div class="container">
+        <h2>{{ titulo }}</h2>
 
         <table>
             <thead>
                 <tr>
                     <th>Data</th>
-                    <th>Dador (NIF)</th>
+                    <th>Tipo</th> <th>Dador (NIF)</th>
                     <th>Nome</th>
                     <th>Componente</th>
-                    <th>Estado</th> </tr>
+                    <th>Estado</th>
+                </tr>
             </thead>
             <tbody>
                 {% for d in doacoes %}
                 <tr>
                     <td>{{ d.data|date:"d/m/Y" }}</td>
-                    
-                    <td>{{ d.dador.nif }}</td>
+                    <td>{{ d.dador.tipo_sangue }}</td> <td>{{ d.dador.nif }}</td>
                     <td>{{ d.dador.nome }}</td>
-                    
-                    <td>{{ d.componente|capfirst }}</td> <td>
+                    <td>{{ d.componente|capfirst }}</td>
+                    <td>
                         {% if d.valido %}
-                            <span style="color: green; font-weight: bold; background: #e8f5e9; padding: 4px 10px; border-radius: 12px; font-size: 14px;">
-                                Válida
-                            </span>
+                            <span style="color: #27ae60; font-weight: bold;">Válida</span>
                         {% else %}
-                            <span style="color: #c62828; font-weight: bold; background: #ffebee; padding: 4px 10px; border-radius: 12px; font-size: 14px;">
-                                Inválida
-                            </span>
+                            <span style="color: #c0392b; font-weight: bold;">Inválida</span>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px; color: #777;">
-                            Ainda não existem doações registadas no sistema.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #777;">
+                        Ainda não existem doações registadas no sistema.
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <div class="footer">
-            <a href="{% url 'gestao_doacoes' %}">← Voltar</a>
-            <span class="badge">Total: {{ doacoes|length }}</span>
+            <a href="{% url 'gestao_doacoes' %}" class="back">← Voltar</a>
+            <span class="badge">Total: {{ doacoes.count }}</span>
         </div>
     </div>
 </body>
