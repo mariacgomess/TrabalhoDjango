@@ -869,23 +869,22 @@ def historico_tipo_sanguineo(request):
     })
 
 def consultar_doacoes(request):
-    doacoes = Doacao.objects.all().order_by('-data')
-
-    total_geral = Doacao.objects.count()
-
+    # Usamos select_related para carregar os dados do dador de forma eficiente
+    doacoes = Doacao.objects.all().select_related('dador').order_by('-data')
+    
+    total_geral = doacoes.count()
+    
+    # Se precisares destas estatísticas para esta página, o cálculo continua aqui:
     por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id'))
-
     for item in por_tipo:
-        if total_geral > 0:
-            # Cálculo da percentagem
-            item['percentagem'] = (item['qtd'] / total_geral) * 100
-        else:
-            item['percentagem'] = 0
+        item['percentagem'] = (item['qtd'] / total_geral * 100) if total_geral > 0 else 0
 
-        return render(request, 'consultar_doacoes.html', {
-            'doacoes': doacoes,
-            'titulo': "Consultar doações"
-        })
+    # IMPORTANTE: O return deve estar fora do loop 'for'
+    return render(request, 'consultar_doacoes.html', {
+        'doacoes': doacoes,
+        'titulo': "Consultar doações",
+        'por_tipo': por_tipo # Caso queiras mostrar o resumo algures
+    })
    
 
 
