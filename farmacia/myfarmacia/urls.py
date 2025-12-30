@@ -8,6 +8,7 @@ from .views import (
 
 # 1. Configuração do Router para a API (Aplicações Distribuídas)
 router = DefaultRouter()
+router.register(r'utilizadores', views.UtilizadorViewSet)
 router.register(r'bancos', BancoViewSet)
 router.register(r'postos', PostoRecolhaViewSet)
 router.register(r'dadores', DadorViewSet)

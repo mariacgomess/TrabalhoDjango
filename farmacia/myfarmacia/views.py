@@ -889,7 +889,24 @@ def consultar_doacoes(request):
 
 
 
+#######################################################33
 
+from rest_framework import viewsets, permissions
+from rest_framework.permissions import IsAuthenticated
+from .models import (
+    Utilizador, Banco, PostoRecolha, Hospital, 
+    Dador, Doacao, Pedido, LinhaPedido
+)
+from .serializers import (
+    UtilizadorSerializer, BancoSerializer, PostoRecolhaSerializer, 
+    HospitalSerializer, DadorSerializer, DoacaoSerializer, 
+    PedidoSerializer, LinhaPedidoSerializer
+)
+
+class UtilizadorViewSet(viewsets.ModelViewSet):
+    queryset = Utilizador.objects.all()
+    serializer_class = UtilizadorSerializer
+    permission_classes = [IsAuthenticated] # Ou IsAdminUser para segurança extra
 
 class BancoViewSet(viewsets.ModelViewSet):
     queryset = Banco.objects.all()
@@ -902,21 +919,32 @@ class PostoRecolhaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class DadorViewSet(viewsets.ModelViewSet):
-    queryset = Dador.objects.all()
     serializer_class = DadorSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Se quiseres filtrar dadores por banco do utilizador logado:
         user = self.request.user
-        if user.tipo == 'posto':
+        # Se for admin, vê tudo. Se for posto, vê apenas os dadores do banco dele.
+        if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             return Dador.objects.filter(banco=user.perfil_posto.posto.banco)
-        return Dador.objects.all()
+        elif user.tipo == 'admin':
+            return Dador.objects.all()
+        return Dador.objects.none() # Hospital não deve ver dadores
 
 class DoacaoViewSet(viewsets.ModelViewSet):
     queryset = Doacao.objects.all()
     serializer_class = DoacaoSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Associa automaticamente o posto do utilizador logado à doação
+        if self.request.user.tipo == 'posto':
+            serializer.save(
+                posto=self.request.user.perfil_posto.posto,
+                banco=self.request.user.perfil_posto.posto.banco
+            )
+        else:
+            serializer.save()
 
 class HospitalViewSet(viewsets.ModelViewSet):
     queryset = Hospital.objects.all()
@@ -924,21 +952,25 @@ class HospitalViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class PedidoViewSet(viewsets.ModelViewSet):
-    queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        #Hospital só vê os seus pedidos
-        if user.tipo == 'hospital':
+        if user.tipo == 'hospital' and hasattr(user, 'perfil_hospital'):
             return Pedido.objects.filter(hospital=user.perfil_hospital.hospital)
-        return Pedido.objects.all()
+        elif user.tipo == 'admin':
+            return Pedido.objects.all()
+        return Pedido.objects.none()
 
     def perform_create(self, serializer):
-        # Se for um hospital a criar, associa automaticamente o hospital dele ao pedido
-        if self.request.user.tipo == 'hospital':
-            serializer.save(hospital=self.request.user.perfil_hospital.hospital)
+        user = self.request.user
+        if user.tipo == 'hospital':
+            # Associa o hospital e o banco automaticamente para evitar fraudes
+            serializer.save(
+                hospital=user.perfil_hospital.hospital,
+                banco=user.perfil_hospital.hospital.banco
+            )
         else:
             serializer.save()
 
