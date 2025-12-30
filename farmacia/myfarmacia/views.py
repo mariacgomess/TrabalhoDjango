@@ -663,11 +663,13 @@ def criar_pedido(request):
         formset = PedidoLinhaFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
+            # 1. Salvar o cabeçalho do pedido
             pedido = form.save(commit=False)
             pedido.hospital = hospital_instancia
             pedido.banco = banco_instancia
             pedido.save()
 
+            # 2. Salvar as linhas do pedido e guardá-las numa lista para verificação
             linhas_criadas = []
             for f in formset:
                 if f.cleaned_data.get('quantidade') and f.cleaned_data.get('quantidade') > 0:
@@ -677,14 +679,13 @@ def criar_pedido(request):
                     linha.save()
                     linhas_criadas.append(linha)
 
-            # --- VERIFICAÇÃO DE STOCK AUTOMÁTICA ---
+            # 3. VERIFICAÇÃO DE STOCK AUTOMÁTICA
             pode_satisfazer_agora = True
             for linha in linhas_criadas:
-                # Contamos as doações disponíveis para este tipo e componente
                 stock_atual = Doacao.objects.filter(
                     dador__tipo_sangue=linha.tipo,
                     componente=linha.componente,
-                    valido=True,
+                    valido=True, # Apenas contamos o que está disponível
                     banco=banco_instancia
                 ).count()
                 
@@ -692,31 +693,38 @@ def criar_pedido(request):
                     pode_satisfazer_agora = False
                     break
 
+            # 4. CONSUMO DE STOCK (Mudar estado para inválido)
             if pode_satisfazer_agora and linhas_criadas:
                 for linha in linhas_criadas:
-                    # Seleciona as doações mais antigas para consumir
-                    doacoes_a_remover = Doacao.objects.filter(
+                    # Seleciona as doações mais antigas para usar primeiro (FIFO)
+                    doacoes_a_consumir = Doacao.objects.filter(
                         dador__tipo_sangue=linha.tipo,
                         componente=linha.componente,
                         valido=True,
                         banco=banco_instancia
                     ).order_by('data')[:linha.quantidade]
                     
-                    # Apaga as doações para atualizar o stock definitivamente
-                    Doacao.objects.filter(id__in=[d.id for d in doacoes_a_remover]).delete()
+                    # Ciclo para mudar o estado de cada bolsa individualmente
+                    for d in doacoes_a_consumir:
+                        d.valido = False
+                        d.save()
                 
                 pedido.estado = "concluido"
                 pedido.save()
                 messages.success(request, "Pedido satisfeito automaticamente com o stock existente!")
             else:
-                messages.warning(request, "Pedido em espera por falta de stock disponível.")
+                messages.warning(request, "Pedido registado em espera por falta de stock disponível.")
 
-            return redirect('listar_pedidos')
+            return redirect('listar_pedidos_hospital')
     else:
         form = PedidoForm()
         formset = PedidoLinhaFormSet()
 
-    return render(request, 'criar_pedido.html', {'form': form, 'formset': formset, 'titulo': "Novo Pedido"})
+    return render(request, 'criar_pedido.html', {
+        'form': form, 
+        'formset': formset, 
+        'titulo': "Novo Pedido de Sangue"
+    }) 
 
 @login_required
 def cancelar_pedido(request, pedido_id):
@@ -769,23 +777,23 @@ def registar_doacao(request):
         if doacao_form.is_valid():
             dador = doacao_form.cleaned_data['nif_dador']
             
-            # BLOQUEIO: Só deixa doar se o dador estiver ATIVO (Apto)
+            # BLOQUEIO: Só doa se dador estiver apto
             if not dador.ativo:
-                messages.error(request, f"O dador {dador.nome} não está apto para doar atualmente (verifique o período de carência).")
+                messages.error(request, f"O dador {dador.nome} não está apto para doar atualmente.")
                 return redirect('gestao_doacoes')
 
-            # Guardar a nova doação
+            # Salvar a nova doação como disponível (valido=True)
             doacao_nova = doacao_form.save(commit=False)
             doacao_nova.banco = dador.banco
             doacao_nova.valido = True
             doacao_nova.save()
 
-            # ATUALIZAÇÃO: Atualiza o estado e a data no perfil do dador
+            # Atualizar dador: data e ficar inapto pelo período de carência
             dador.ultimaDoacao = date.today()
-            dador.ativo = False # Fica inapto até ser reativado após o período de espera
+            dador.ativo = False 
             dador.save()
 
-            # --- TENTAR SATISFAZER PEDIDOS PENDENTES ---
+            # --- TENTAR SATISFAZER PEDIDOS ATIVOS LOGO APÓS A DOAÇÃO ---
             pedidos_ativos = Pedido.objects.filter(
                 estado="ativo", 
                 banco=doacao_nova.banco
@@ -795,6 +803,7 @@ def registar_doacao(request):
                 linhas = pedido.itens.all()
                 pode_fechar = True
                 
+                # Verificar se o stock total (incluindo a nova doação) satisfaz este pedido
                 for linha in linhas:
                     stock = Doacao.objects.filter(
                         dador__tipo_sangue=linha.tipo,
@@ -806,25 +815,32 @@ def registar_doacao(request):
                         pode_fechar = False
                         break
                 
+                # Se houver stock, "consome" as bolsas mudando o estado
                 if pode_fechar:
                     for linha in linhas:
-                        doacoes_stock = Doacao.objects.filter(
+                        doacoes_em_stock = Doacao.objects.filter(
                             dador__tipo_sangue=linha.tipo,
                             componente=linha.componente,
                             valido=True,
                             banco=pedido.banco
                         ).order_by('data')[:linha.quantidade]
-                        Doacao.objects.filter(id__in=[d.id for d in doacoes_stock]).delete()
+                        
+                        for d in doacoes_em_stock:
+                            d.valido = False
+                            d.save()
                     
                     pedido.estado = "concluido"
                     pedido.save()
             
-            messages.success(request, f"Doação de {dador.nome} registada com sucesso e stock verificado.")
+            messages.success(request, f"Doação de {dador.nome} registada com sucesso.")
             return redirect('gestao_doacoes')
     else:
         doacao_form = DoacaoForm()
 
-    return render(request, 'registar_doacao.html', {'entidade_form': doacao_form, 'titulo': "Nova Doação"})
+    return render(request, 'registar_doacao.html', {
+        'entidade_form': doacao_form, 
+        'titulo': "Nova Doação"
+    })
 
 def historico_dador(request):
     dador_encontrado = None
