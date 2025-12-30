@@ -921,6 +921,8 @@ class PostoRecolhaViewSet(viewsets.ModelViewSet):
 class DadorViewSet(viewsets.ModelViewSet):
     serializer_class = DadorSerializer
     permission_classes = [IsAuthenticated]
+    queryset = Dador.objects.all() 
+    serializer_class = DadorSerializer
 
     def get_queryset(self):
         user = self.request.user

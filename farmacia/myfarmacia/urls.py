@@ -8,14 +8,14 @@ from .views import (
 
 # 1. Configuração do Router para a API (Aplicações Distribuídas)
 router = DefaultRouter()
-router.register(r'utilizadores', views.UtilizadorViewSet)
-router.register(r'bancos', BancoViewSet)
-router.register(r'postos', PostoRecolhaViewSet)
-router.register(r'dadores', DadorViewSet)
-router.register(r'doacoes', DoacaoViewSet)
-router.register(r'hospitais', HospitalViewSet)
-router.register(r'pedidos', PedidoViewSet)
-router.register(r'itens-pedido', LinhaPedidoViewSet)
+# No teu ficheiro myfarmacia/urls.py
+router.register(r'bancos', BancoViewSet, basename='banco')
+router.register(r'postos', PostoRecolhaViewSet, basename='postorecolha')
+router.register(r'dadores', DadorViewSet, basename='dador')
+router.register(r'doacoes', DoacaoViewSet, basename='doacao')
+router.register(r'hospitais', HospitalViewSet, basename='hospital')
+router.register(r'pedidos', PedidoViewSet, basename='pedido')
+router.register(r'itens-pedido', LinhaPedidoViewSet, basename='linhapedido')
 
 urlpatterns = [
     # --- ROTA DA API ---
