@@ -234,7 +234,7 @@ def pagina_posto(request):
     
     # Estatísticas para o Dashboard
     total_dadores = Dador.objects.count()
-    total_doacoes = Doacao.objects.count()
+    total_doacoes = Doacao.objects.filter(valido=True).count()
 
     context = {
         'total_dadores': total_dadores,
@@ -715,7 +715,7 @@ def criar_pedido(request):
             else:
                 messages.warning(request, "Pedido registado em espera por falta de stock disponível.")
 
-            return redirect('listar_pedidos_hospital')
+            return redirect('listar_pedidos')
     else:
         form = PedidoForm()
         formset = PedidoLinhaFormSet()
@@ -784,6 +784,12 @@ def registar_doacao(request):
 
             # Salvar a nova doação como disponível (valido=True)
             doacao_nova = doacao_form.save(commit=False)
+            
+            # 2. ATRIBUIÇÃO AUTOMÁTICA DO POSTO E VALIDADE
+            perfil = getattr(request.user, 'perfil_posto', None)
+            if perfil:
+                doacao_nova.posto = perfil.posto # Preenche o posto automaticamente
+
             doacao_nova.banco = dador.banco
             doacao_nova.valido = True
             doacao_nova.save()

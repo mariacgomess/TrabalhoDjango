@@ -134,7 +134,7 @@ class DoacaoForm(forms.ModelForm):
     class Meta:
         model = Doacao
         # REMOVEMOS o campo 'dador' desta lista para não aparecer o dropdown
-        fields = ["componente", "valido", "posto", "banco"] # Podes adicionar data/hora se precisares
+        fields = ["componente", "banco"] # Podes adicionar data/hora se precisares
 
     # Validar se o NIF existe e se o dador é válido
     def clean_nif_dador(self):
@@ -160,7 +160,7 @@ class DoacaoForm(forms.ModelForm):
         
         # Vamos buscar o Dador que encontrámos na função clean_nif_dador e associamos à doação manualmente
         doacao.dador = self.cleaned_data['nif_dador']
-
+        doacao.valido= True
         if commit:
             doacao.save()
         return doacao

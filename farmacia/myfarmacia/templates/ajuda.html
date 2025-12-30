@@ -161,13 +161,46 @@
         text-decoration: none;
         margin-top: 10px;
     }
+    /* Botão Voltar Estilizado */
+    .btn-voltar {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        text-decoration: none;
+        color: white;
+        background: rgba(255, 255, 255, 0.2); /* Fundo semi-transparente */
+        padding: 10px 20px;
+        border-radius: 50px; /* Formato de pílula */
+        font-size: 0.9rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(5px); /* Efeito de vidro foscado */
+    }
 
+    .btn-voltar:hover {
+        background: white;
+        color: #7a1c1c;
+        transform: translateX(-5px); /* Move ligeiramente para a esquerda no hover */
+    }
+
+    /* Ajuste para o header aceitar posicionamento absoluto do botão */
+    header {
+        position: relative;
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 60px 20px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        text-align: center;
+    }
 </style>
 
 </head>
 <body>
 
-    <header>
+<header>
+        <a href="{% url 'home' %}" class="btn-voltar"> &#10229; Voltar</a>
+        
         <h1>Banco de Sangue</h1>
         <p>Bem-vindo/a!</p>
     </header>
@@ -175,7 +208,6 @@
 <div class="ajuda-container">
     <h2 style="text-align: center; color: #4d0f0f; font-size: 2rem;">Centro de Ajuda</h2>
     <p style="text-align: center; color: #666; margin-bottom: 40px;">Tudo o que precisa de saber para utilizar o sistema.</p>
-
     <div class="ajuda-seccao">
         <h3>Como Realizar Pedidos (Hospitais)</h3>
         <div class="guia-passos">
