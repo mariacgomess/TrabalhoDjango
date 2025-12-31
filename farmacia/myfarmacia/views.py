@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .models import TodoItem, Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital, Pedido, LinhaPedido
+from .models import Utilizador, Banco,TipoSangue, Dador, PostoRecolha, Hospital, Doacao, PerfilPosto, PerfilHospital, Pedido, LinhaPedido
 from .forms import CriarUtilizadorForm, PostoForm, HospitalForm, DadorForm, DoacaoForm, PedidoForm, PedidoLinhaFormSet
 from django.db.models import Sum
 from django.contrib.auth import logout as django_logout
@@ -234,7 +234,7 @@ def pagina_posto(request):
     
     # Estatísticas para o Dashboard
     total_dadores = Dador.objects.count()
-    total_doacoes = Doacao.objects.count()
+    total_doacoes = Doacao.objects.filter(valido=True).count()
 
     context = {
         'total_dadores': total_dadores,
@@ -243,11 +243,6 @@ def pagina_posto(request):
         'ultimo_login': request.user.last_login, # Pega na data real do último login
     }
     return render(request, 'posto.html', context)
-
-
-def todos(request):
-    items = TodoItem.objects.all()
-    return render(request, "todos.html", {"todosa": items})
 
 
 @login_required
@@ -715,7 +710,7 @@ def criar_pedido(request):
             else:
                 messages.warning(request, "Pedido registado em espera por falta de stock disponível.")
 
-            return redirect('listar_pedidos_hospital')
+            return redirect('listar_pedidos')
     else:
         form = PedidoForm()
         formset = PedidoLinhaFormSet()
@@ -784,6 +779,12 @@ def registar_doacao(request):
 
             # Salvar a nova doação como disponível (valido=True)
             doacao_nova = doacao_form.save(commit=False)
+            
+            # 2. ATRIBUIÇÃO AUTOMÁTICA DO POSTO E VALIDADE
+            perfil = getattr(request.user, 'perfil_posto', None)
+            if perfil:
+                doacao_nova.posto = perfil.posto # Preenche o posto automaticamente
+
             doacao_nova.banco = dador.banco
             doacao_nova.valido = True
             doacao_nova.save()
