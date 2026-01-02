@@ -17,6 +17,8 @@ from .serializers import (
     DadorSerializer, DoacaoSerializer, HospitalSerializer, 
     PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
 )
+import csv
+from django.http import HttpResponse
 
 
 # --- Navegação Base ---
@@ -93,16 +95,12 @@ def pagina_admin(request):
         'num_alertas': num_alertas,
         'perigo_critico': perigo_critico,
         'pedidos_pendentes': pedidos_pendentes_contagem,
-        # Em vez de filter(estado='True')
         'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
         'ultimo_login': request.user.last_login, # Pega na data real do último login
 
 }
     return render(request, 'admin_dashboard.html', context)
 
-##extra extra
-import csv
-from django.http import HttpResponse
 
 @login_required
 def exportar_stock_csv(request):
@@ -566,7 +564,7 @@ def listar_dadores(request):
 def dadores_tipo_sangue(request):
     dadores_por_grupo = {}
     for codigo, nome_bonito in TipoSangue.choices:
-        # Filtramos pelo CÓDIGO (que é o que está guardado na base de dados)
+        # Filtramos pelo código (que é o que está guardado na base de dados)
         dadores = Dador.objects.filter(tipo_sangue=codigo)
         dadores_por_grupo[nome_bonito] = dadores
             
@@ -599,8 +597,6 @@ def atualizar_hospital(request):
         messages.error(request, "Acesso negado.")
         return redirect('home')
     
-    # IMPORTANTE: Mude de 'perfilhospital' para 'perfil_hospital' 
-    # para coincidir com o related_name do seu models.py
     perfil_hospital = getattr(request.user, 'perfil_hospital', None)
     
     hospital = None
