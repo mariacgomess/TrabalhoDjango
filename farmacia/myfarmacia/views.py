@@ -399,19 +399,6 @@ def consultas_estatisticas(request):
     })
 
 
-
-@login_required
-def gestao_hospital(request):
-    
-    return render(request, 'gestao_hospital.html')
-
-
-@login_required
-def gestao_pedidos(request):
-    return render(request, 'gestao_pedidos.html')
-
-
-
 @login_required
 def registar_dador(request):
     if request.user.tipo != 'posto':
@@ -583,12 +570,15 @@ def dadores_apenas_ativos(request):
     })
 
 
-
 @login_required
 def gestao_hospital(request):
     
     return render(request, 'gestao_hospital.html')
 
+
+@login_required
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos.html')
 
 
 @login_required
@@ -936,7 +926,7 @@ def estatisticas_hospital(request):
     return render(request, 'estatisticas_hospital.html', context)
 
 
-#######################################################33
+#######################################################
 
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
