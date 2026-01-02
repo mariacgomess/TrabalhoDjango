@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }} | Banco de Sangue</title>
+    <style>
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        /* Estrutura Base */
+        .layout { display: flex; min-height: 100vh; }
+
+        /* ===== SIDEBAR (ESTILO FIEL AO EXEMPLO) ===== */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+            color: white;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            text-align: center;
+            font-weight: normal;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-section {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .section-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            font-weight: 800;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .online-indicator {
+            width: 10px;
+            height: 10px;
+            background: #2ecc71;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.4);
+        }
+
+        .sidebar-footer { margin-top: auto; }
+
+        .system-box {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* ===== CONTEÚDO PRINCIPAL ===== */
+        .content { flex: 1; padding: 30px 40px; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 { margin: 0; color: #7a1c1c; font-weight: 500; font-size: 1.8rem; }
+    
+        /* GRELHA DE CARTÕES (KPIs) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+    
+        .card {
+            background: white;
+            padding: 20px 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            border-top: 4px solid #7a1c1c;
+            transition: 0.3s;
+        }
+        
+        .card h3 { margin: 0; font-size: 28px; color: #333; }
+        .card p { margin: 8px 0 0; color: #888; font-size: 11px; text-transform: uppercase; font-weight: bold; }
+    
+        /* SECÇÃO DE GRÁFICO DE BARRAS */
+        .types-section {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+        }
+    
+        .type-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+    
+        .type-label { width: 50px; font-weight: bold; color: #444; font-size: 14px; }
+        .type-bar-bg { flex-grow: 1; background: #eee; height: 10px; border-radius: 5px; margin: 0 15px; overflow: hidden; }
+        
+        .type-bar-fill { 
+            background: #7a1c1c; 
+            height: 100%; 
+            border-radius: 5px; 
+            width: var(--width, 0%);
+            transition: width 1s ease-in-out;
+        }
+    
+        .type-count { width: 45px; text-align: right; color: #7a1c1c; font-weight: bold; font-size: 14px; }
+    
+        .footer-nav {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-back { text-decoration: none; color: #7a1c1c; font-weight: bold; font-size: 14px; }
+        .badge { background: #e9ecef; padding: 6px 14px; border-radius: 20px; font-size: 12px; color: #666; font-weight: 600; }
+
+        @media (max-width: 1100px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+    <aside class="sidebar">
+        <h2>{{ nome_banco|default:"Banco de Sangue Central" }}</h2>
+        
+        <div class="sidebar-section">
+            <p class="section-label">Instituição</p>
+            <div class="info-row">
+                <span style="font-weight: bold;"> {{ hospital.nome }}</span>
+            </div>
+            
+            <p class="section-label" style="margin-top: 15px;">Utilizador</p>
+            <div class="info-row">
+                <span class="online-indicator"></span>
+                <span style="font-weight: bold;"> {{ request.user.username }}</span>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="system-box">
+                <p><strong>Hospital</strong></p>
+                <p>Módulo de Estatísticas</p>
+                <p style="margin-top: 10px; font-size: 10px; opacity: 0.7;">
+                    {% now "d \d\e F, Y" %}
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="header">
+            <h1>{{ titulo }}</h1>
+            <div class="badge">Relatório em Tempo Real</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="card">
+                <h3>{{ total_pedidos }}</h3>
+                <p>Pedidos Totais</p>
+            </div>
+            <div class="card">
+                <h3>{{ total_unidades }}</h3>
+                <p>Bolsas Pedidas</p>
+            </div>
+            <div class="card">
+                <h3>{{ concluidos }}</h3>
+                <p>Satisfeitos</p>
+            </div>
+            <div class="card">
+                <h3>{{ ativos }}</h3>
+                <p>Em Espera</p>
+            </div>
+        </div>
+
+        <div class="types-section">
+            <h3 style="margin-top: 0; margin-bottom: 25px; color: #555; font-size: 1.1rem; font-weight: 600;">
+                Distribuição de Pedidos por Tipo Sanguíneo
+            </h3>
+            
+            {% for item in por_tipo %}
+            <div class="type-row">
+                <div class="type-label">{{ item.tipo }}</div>
+                <div class="type-bar-bg">
+                    <div class="type-bar-fill" style="--width: {{ item.percentagem|floatformat:0 }}%;"></div>
+                </div>
+                <div class="type-count">{{ item.qtd }}</div>
+            </div>
+            {% empty %}
+            <p style="color: #777; text-align: center; padding: 20px;">Nenhum registo disponível para análise.</p>
+            {% endfor %}
+        </div>
+
+        <div class="footer-nav">
+            <a href="{% url 'pagina_hospital' %}" class="btn-back">← Voltar ao Painel Principal</a>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

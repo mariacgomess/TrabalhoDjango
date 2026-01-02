@@ -71,6 +71,7 @@ urlpatterns = [
     path('hospital/gestao_pedidos/criar_pedido/', views.criar_pedido, name='criar_pedido'),
     path('hospital/gestao_pedidos/listar_pedido/', views.listar_pedidos_hospital, name='listar_pedidos'),
     path('hospital/gestao_pedidos/cancelar_pedido/<int:pedido_id>/', views.cancelar_pedido, name='cancelar_pedido'),
+    path('hospital/estatisticas_hospital/', views.estatisticas_hospital, name='estatisticas_hospital')
 
 
 ]
