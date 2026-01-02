@@ -21,7 +21,7 @@ urlpatterns = [
     # --- ROTA DA API ---
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-
+ 
     # --- NAVEGAÇÃO BASE ---
     path("", views.home, name="home"),
     path("todos/", views.todos, name="Todos"),
