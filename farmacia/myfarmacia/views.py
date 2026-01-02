@@ -17,6 +17,8 @@ from .serializers import (
     DadorSerializer, DoacaoSerializer, HospitalSerializer, 
     PedidoSerializer, BancoSerializer, PostoRecolhaSerializer, LinhaPedidoSerializer
 )
+import csv
+from django.http import HttpResponse
 
 
 # --- Navegação Base ---
@@ -93,16 +95,12 @@ def pagina_admin(request):
         'num_alertas': num_alertas,
         'perigo_critico': perigo_critico,
         'pedidos_pendentes': pedidos_pendentes_contagem,
-        # Em vez de filter(estado='True')
         'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
         'ultimo_login': request.user.last_login, # Pega na data real do último login
 
 }
     return render(request, 'admin_dashboard.html', context)
 
-##extra extra
-import csv
-from django.http import HttpResponse
 
 @login_required
 def exportar_stock_csv(request):
@@ -401,19 +399,6 @@ def consultas_estatisticas(request):
     })
 
 
-
-@login_required
-def gestao_hospital(request):
-    
-    return render(request, 'gestao_hospital.html')
-
-
-@login_required
-def gestao_pedidos(request):
-    return render(request, 'gestao_pedidos.html')
-
-
-
 @login_required
 def registar_dador(request):
     if request.user.tipo != 'posto':
@@ -566,7 +551,7 @@ def listar_dadores(request):
 def dadores_tipo_sangue(request):
     dadores_por_grupo = {}
     for codigo, nome_bonito in TipoSangue.choices:
-        # Filtramos pelo CÓDIGO (que é o que está guardado na base de dados)
+        # Filtramos pelo código (que é o que está guardado na base de dados)
         dadores = Dador.objects.filter(tipo_sangue=codigo)
         dadores_por_grupo[nome_bonito] = dadores
             
@@ -585,12 +570,15 @@ def dadores_apenas_ativos(request):
     })
 
 
-
 @login_required
 def gestao_hospital(request):
     
     return render(request, 'gestao_hospital.html')
 
+
+@login_required
+def gestao_pedidos(request):
+    return render(request, 'gestao_pedidos.html')
 
 
 @login_required
@@ -599,8 +587,6 @@ def atualizar_hospital(request):
         messages.error(request, "Acesso negado.")
         return redirect('home')
     
-    # IMPORTANTE: Mude de 'perfilhospital' para 'perfil_hospital' 
-    # para coincidir com o related_name do seu models.py
     perfil_hospital = getattr(request.user, 'perfil_hospital', None)
     
     hospital = None
@@ -779,7 +765,7 @@ def registar_doacao(request):
 
             # Salvar a nova doação como disponível (valido=True)
             doacao_nova = doacao_form.save(commit=False)
-            
+
             # 2. ATRIBUIÇÃO AUTOMÁTICA DO POSTO E VALIDADE
             perfil = getattr(request.user, 'perfil_posto', None)
             if perfil:
@@ -903,10 +889,44 @@ def consultar_doacoes(request):
         'por_tipo': por_tipo # Caso queiras mostrar o resumo algures
     })
    
+@login_required
+def estatisticas_hospital(request):
+    if request.user.tipo != 'hospital':
+        return redirect('home')
+    
+    perfil = getattr(request.user, 'perfil_hospital', None)
+    hospital = perfil.hospital if perfil else None
+    
+    # KPIs (Cartões Superiores)
+    total_pedidos = Pedido.objects.filter(hospital=hospital).count()
+    concluidos = Pedido.objects.filter(hospital=hospital, estado='concluido').count()
+    ativos = Pedido.objects.filter(hospital=hospital, estado='ativo').count()
+    total_unidades = LinhaPedido.objects.filter(pedido__hospital=hospital).aggregate(Sum('quantidade'))['quantidade__sum'] or 0
+
+    # Gráfico de Barras: Distribuição por Tipo de Sangue mais pedido
+    # Calculamos a percentagem para as barras de progresso
+    por_tipo = LinhaPedido.objects.filter(pedido__hospital=hospital).values('tipo').annotate(qtd=Sum('quantidade')).order_by('-qtd')
+    
+    for item in por_tipo:
+        if total_unidades > 0:
+            item['percentagem'] = (item['qtd'] / total_unidades) * 100
+        else:
+            item['percentagem'] = 0
+
+    context = {
+        'hospital': hospital,
+        'total_pedidos': total_pedidos,
+        'concluidos': concluidos,
+        'ativos': ativos,
+        'total_unidades': total_unidades,
+        'por_tipo': por_tipo,
+        'titulo': "Estatísticas do Hospital",
+        'nome_banco': hospital.banco.nome if hospital else "Banco Central"
+    }
+    return render(request, 'estatisticas_hospital.html', context)
 
 
-
-#######################################################33
+#######################################################
 
 from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
