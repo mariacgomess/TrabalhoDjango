@@ -4,11 +4,6 @@ from datetime import date
 from django.utils import timezone
 from datetime import timedelta
 
-# Create your models here.
-class TodoItem(models.Model):
-    title = models.CharField(max_length=200)
-    completed=models.BooleanField(default=False)
-
 class Banco(models.Model):
     nome = models.CharField(max_length=100)
 

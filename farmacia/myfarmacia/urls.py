@@ -24,7 +24,6 @@ urlpatterns = [
  
     # --- NAVEGAÇÃO BASE ---
     path("", views.home, name="home"),
-    path("todos/", views.todos, name="Todos"),
     path("login/", views.login_view, name="Login"),
     path("logout/", views.logout_view, name="logout"),
     path("ajuda/", views.ajuda, name="ajuda"),
