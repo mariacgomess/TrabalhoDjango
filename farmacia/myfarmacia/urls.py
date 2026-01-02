@@ -40,8 +40,6 @@ urlpatterns = [
     path("admin-dashboard/stock-global/", views.stock_total_central, name="stock_total_central"),
 
     path('posto/', views.pagina_posto, name='pagina_posto'),
-
-
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
     path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),
     path("posto/consultas_estatisticas/", views.consultas_estatisticas, name="consultas_estatisticas"),
@@ -71,6 +69,5 @@ urlpatterns = [
     path('hospital/gestao_pedidos/criar_pedido/', views.criar_pedido, name='criar_pedido'),
     path('hospital/gestao_pedidos/listar_pedido/', views.listar_pedidos_hospital, name='listar_pedidos'),
     path('hospital/gestao_pedidos/cancelar_pedido/<int:pedido_id>/', views.cancelar_pedido, name='cancelar_pedido'),
-
 
 ]
