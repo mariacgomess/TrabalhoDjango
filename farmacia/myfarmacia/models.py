@@ -10,7 +10,6 @@ class Banco(models.Model):
     def __str__(self):
         return f"{self.nome}"
 
-
 class TipoSangue(models.TextChoices):
     A_POSITIVO = "A+", "A positivo"
     A_NEGATIVO = "A-", "A negativo"
@@ -24,6 +23,13 @@ class TipoSangue(models.TextChoices):
 class Genero(models.TextChoices):
     FEMININO = "F", "Feminino"
     MASCULINO = "M", "Masculino"
+    
+class Componente(models.TextChoices):
+    SANGUE = "sangue", "Sangue"
+    GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
+    PLASMA = "plasma", "Plasma"
+    PLAQUETAS = "plaquetas", "Plaquetas"
+
 
 class Dador(models.Model):
     # ... (mantenha os campos conforme o seu código)
@@ -81,11 +87,6 @@ class Dador(models.Model):
         # CORREÇÃO: Usar tipo_sangue em vez de tipo
         return f"{self.nome} - {self.nif} - {self.tipo_sangue}"
     
-class Componente(models.TextChoices):
-    SANGUE = "sangue", "Sangue"
-    GLOBULOS_VERMELHOS = "globulos", "Globulos Vermelhos"
-    PLASMA = "plasma", "Plasma"
-    PLAQUETAS = "plaquetas", "Plaquetas"
 
 
 class PostoRecolha(models.Model):
