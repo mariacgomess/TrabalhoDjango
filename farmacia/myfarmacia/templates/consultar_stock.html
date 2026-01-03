@@ -5,6 +5,7 @@
     <title>{{ titulo }} | Banco de Sangue</title>
 
     <style>
+        * { box-sizing: border-box; }
         body {
             margin: 0;
             font-family: "Segoe UI", Tahoma, sans-serif;
@@ -45,24 +46,10 @@
             text-align: left;
         }
 
-        th:last-child,
-        td:last-child {
-            text-align: right;
-        }
+        th:last-child, td:last-child { text-align: right; }
 
-        tbody tr {
-            border-bottom: 1px solid #eee;
-        }
-
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-        }
+        tbody tr { border-bottom: 1px solid #eee; }
+        tbody tr:hover { background: #f9f9f9; }
 
         .footer {
             margin-top: 30px;
@@ -77,9 +64,7 @@
             font-weight: bold;
         }
 
-        .back:hover {
-            text-decoration: underline;
-        }
+        .back:hover { text-decoration: underline; }
 
         .badge {
             background: #eee;
@@ -93,8 +78,11 @@
 <body>
 
 <div class="container">
-
     <h2>{{ titulo }}</h2>
+
+    <div style="height: 300px; margin-bottom: 40px; margin-top: 20px;">
+        <canvas id="graficoStock"></canvas>
+    </div>
 
     <table>
         <thead>
@@ -104,44 +92,19 @@
                 <th>Quantidade (Unidades)</th>
             </tr>
         </thead>
-
         <tbody>
             {% for tipo, componente, quantidade in combinacoes %}
             <tr>
                 <td>{{ tipo }}</td>
                 <td>{{ componente }}</td>
                 <td>
-                {% if quantidade > 0 %}
-                    <strong>{{ quantidade }}</strong>
-                {% else %}
-                    <span style="color: #999;">0</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-
-    <div class="footer">
-        <a href="{% url 'pagina_admin' %}" class="back">← Voltar ao Painel do Administrador</a>
-        <span class="badge">Banco de Sangue</span>
-    </div>
-
-</div>
-
-</body>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<div class="container">
-    <h2>{{ titulo }}</h2>
-
-    <div style="height: 300px; margin-bottom: 40px;">
-        <canvas id="graficoStock"></canvas>
-    </div>
-
-    <table>
-        <tbody>
-            {% for tipo, componente, quantidade in combinacoes %}
+                    {% if quantidade > 0 %}
+                        <strong>{{ quantidade }}</strong>
+                    {% else %}
+                        <span style="color: #999;">0</span>
+                    {% endif %}
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -158,6 +121,7 @@
      style="display: none;">
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const el = document.getElementById('data-grafico');
@@ -188,4 +152,6 @@
         });
     });
 </script>
+
+</body>
 </html>

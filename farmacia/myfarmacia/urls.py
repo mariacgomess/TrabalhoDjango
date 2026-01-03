@@ -38,7 +38,9 @@ urlpatterns = [
     path("admin-dashboard/stock-componente/", views.stock_por_componente, name="stock_componente"),
     path("admin-dashboard/exportar-stock/", views.exportar_stock_csv, name="exportar_stock"),
     path("admin-dashboard/stock-global/", views.stock_total_central, name="stock_total_central"),
-
+    path('gestao-admin/pedidos/listar/', views.listar_pedidos_admin, name='listar_pedidos_admin'),
+    path('gestao-admin/pedidos/rejeitar/<int:pedido_id>/', views.rejeitar_pedido, name='rejeitar_pedido'),
+    
     path('posto/', views.pagina_posto, name='pagina_posto'),
     path("posto/gestao_dadores/", views.gestao_dadores, name="gestao_dadores"),
     path("posto/gestao_doacoes/", views.gestao_doacoes, name="gestao_doacoes"),

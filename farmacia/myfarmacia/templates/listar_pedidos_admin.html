@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão Central de Pedidos | Banco de Sangue</title>
+
+<style>
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, sans-serif;
+        background: #f4f6f9;
+        color: #333;
+    }
+
+    header {
+        background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
+        color: white;
+        padding: 30px 40px;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    header h1 { margin: 0; font-weight: normal; }
+    header p { margin: 6px 0 20px 0; opacity: 0.9; }
+
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 20px;
+        font-size: 15px;
+        padding: 8px 14px;
+        border-radius: 6px;
+        transition: background 0.2s;
+    }
+
+    nav a:hover { background: rgba(255,255,255,0.15); }
+
+    .container { padding: 40px; max-width: 1100px; margin: auto; }
+
+    .pedido-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+        border-left: 6px solid #7a1c1c;
+    }
+
+    .pedido-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #f4f6f9;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* Cores dos Estados */
+    .status-badge { font-weight: bold; padding: 6px 12px; border-radius: 4px; font-size: 13px; text-transform: uppercase; }
+    .status-ativo { color: #856404; background: #fff3cd; } /* Amarelo para pendente no admin */
+    .status-concluido { color: #007bff; background: #e7f1ff; }
+    .status-cancelado { color: #666; background: #eee; }
+    .status-rejeitado { color: #dc3545; background: #ffeaea; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { text-align: left; padding: 10px; background: #f8f9fa; color: #7a1c1c; border-bottom: 1px solid #ddd; font-size: 14px; }
+    td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+
+    .btn-rejeitar {
+        background: #dc3545;
+        color: white;
+        text-decoration: none;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 13px;
+        transition: background 0.2s;
+        margin-left: 10px;
+        font-weight: 600;
+    }
+
+    .btn-rejeitar:hover { background: #a71d2a; }
+
+    .messages { list-style: none; padding: 0; margin-bottom: 20px; }
+    .messages li { padding: 12px; border-radius: 6px; margin-bottom: 10px; font-weight: bold; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+</style>
+
+</head>
+<body>
+
+    <header>
+        <h1>Banco de Sangue</h1>
+        <p>Gestão de Pedidos da Rede - Administrador: {{ request.user.username }}</p>
+        <nav>
+            <a href="{% url 'pagina_admin' %}">Voltar ao Painel Central</a>
+        </nav>
+    </header>
+
+    <div class="container">
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if pedidos %}
+            {% for pedido in pedidos %}
+                <div class="pedido-card">
+                    <div class="pedido-header">
+                        <div>
+                            <strong>{{ pedido.hospital.nome }}</strong> 
+                            <span style="font-size: 14px; color: #666; margin-left: 10px;">Pedido #{{ pedido.id }} - {{ pedido.data|date:"d/m/Y" }}</span>
+                        </div>
+                        
+                        <div>
+                            {% if pedido.estado == "ativo" %}
+                                <span class="status-badge status-ativo">Pendente</span>
+                                <a href="{% url 'rejeitar_pedido' pedido.id %}" 
+                                   class="btn-rejeitar" 
+                                   onclick="return confirm('Confirmar a rejeição deste pedido hospitalar?')">
+                                   Rejeitar Pedido
+                                </a>
+                            {% elif pedido.estado == "concluido" %}
+                                <span class="status-badge status-concluido">Concluído</span>
+                            {% elif pedido.estado == "rejeitado" %}
+                                <span class="status-badge status-rejeitado">Rejeitado</span>
+                            {% else %}
+                                <span class="status-badge status-cancelado">Cancelado pelo Hospital</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo Sanguíneo</th>
+                                <th>Componente</th>
+                                <th>Quantidade Solicitada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for linha in pedido.itens.all %}
+                                <tr>
+                                    <td><strong>{{ linha.tipo }}</strong></td>
+                                    <td>{{ linha.get_componente_display }}</td>
+                                    <td>{{ linha.quantidade }} unidades</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="3" style="text-align: center; color: #999;">Sem itens registados neste pedido.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 50px; color: #666;">
+                <h3>Não existem pedidos registados no sistema.</h3>
+            </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>
