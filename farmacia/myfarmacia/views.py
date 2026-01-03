@@ -292,7 +292,7 @@ def stock_por_componente(request):
         return redirect('home')
 
     # Lista fixa de componentes que queres que apareçam sempre
-    componentes_obrigatorios = ["Sangue", "Plasma", "Globulos Vermelhos"]
+    componentes_obrigatorios = ["Sangue", "Plasma", "Globulos Vermelhos", "Plaquetas"]
     
     combinacoes = []
     valores = []
