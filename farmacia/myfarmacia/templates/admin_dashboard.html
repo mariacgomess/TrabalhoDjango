@@ -22,6 +22,10 @@
             background: linear-gradient(180deg, #7a1c1c, #4d0f0f);
             color: white;
             padding: 25px 20px;
+            /* Remova ou altere height: 100vh para min-height: 100vh */
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar h2 {
@@ -87,6 +91,8 @@
             grid-template-columns: 1fr 1fr;
             gap: 30px;
         }
+
+        
 
         .action-box {
             background: white;
@@ -192,6 +198,10 @@
         @media (max-width: 900px) {
             .actions-container, .cards { grid-template-columns: 1fr; }
         }
+
+        .btn-largo {
+    grid-column: span 2;
+}
     </style>
 </head>
 
@@ -369,11 +379,23 @@
                         {% endif %}
                     </a>
 
-                    <a href="{% url 'stock_tipo' %}">Por Grupo</a>
+                    <a href="{% url 'stock_tipo' %}">Por Tipo Sanguíneo</a>
                     <a href="{% url 'stock_componente' %}">Por Componente</a>
                     
                     <a href="{% url 'exportar_stock' %}" class="btn-export">
                          Exportar Inventário Completo (CSV)
+                    </a>
+                </div>
+            </div>
+            <div class="action-box">
+                <h3>Gestão de Pedidos</h3>
+                <p>Visualize e responda às solicitações pendentes dos hospitais.</p>
+                <div class="button-grid">
+                    <a href="{% url 'listar_pedidos_admin' %}" class="btn-largo">
+                        Gerir Pedidos Hospitalares 
+                        {% if pedidos_pendentes > 0 %}
+                            <span class="badge-count" style="background: #7a1c1c; color: white;">{{ pedidos_pendentes }}</span>
+                        {% endif %}
                     </a>
                 </div>
             </div>
