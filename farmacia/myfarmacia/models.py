@@ -35,7 +35,7 @@ class Dador(models.Model):
     # ... (mantenha os campos conforme o seu código)
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=10, unique=True)
+    nif = models.CharField(max_length=9, unique=True)
     genero = models.CharField(max_length=3, choices=Genero.choices)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     telefone = models.CharField(max_length=9, unique=True)
