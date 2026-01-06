@@ -918,7 +918,7 @@ def estatisticas_hospital(request):
     
     perfil = getattr(request.user, 'perfil_hospital', None)
     hospital = perfil.hospital if perfil else None
-    
+       
     # KPIs (Cartões Superiores)
     total_pedidos = Pedido.objects.filter(hospital=hospital).count()
     concluidos = Pedido.objects.filter(hospital=hospital, estado='concluido').count()
