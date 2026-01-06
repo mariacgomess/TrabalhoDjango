@@ -978,19 +978,18 @@ class PostoRecolhaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class DadorViewSet(viewsets.ModelViewSet):
-    serializer_class = DadorSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Dador.objects.all() 
     serializer_class = DadorSerializer
 
     def get_queryset(self):
         user = self.request.user
-        # Se for admin, vê tudo. Se for posto, vê apenas os dadores do banco dele.
+        if user.is_anonymous:
+            return Dador.objects.none()
+        if user.tipo == 'admin':
+            return Dador.objects.all()
         if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             return Dador.objects.filter(banco=user.perfil_posto.posto.banco)
-        elif user.tipo == 'admin':
-            return Dador.objects.all()
-        return Dador.objects.none() # Hospital não deve ver dadores
+        return Dador.objects.none()
 
 class DoacaoViewSet(viewsets.ModelViewSet):
     queryset = Doacao.objects.all()
@@ -998,13 +997,14 @@ class DoacaoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Associa automaticamente o posto do utilizador logado à doação
-        if self.request.user.tipo == 'posto':
+        user = self.request.user
+        if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             serializer.save(
-                posto=self.request.user.perfil_posto.posto,
-                banco=self.request.user.perfil_posto.posto.banco
+                posto=user.perfil_posto.posto,
+                banco=user.perfil_posto.posto.banco
             )
         else:
+            # Se for admin, ele tem de enviar o posto e banco manualmente no JSON
             serializer.save()
 
 class HospitalViewSet(viewsets.ModelViewSet):

@@ -58,7 +58,7 @@ class DadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dador
         fields = [
-            'id', 'nome', 'nif', 'genero', 'tipo_sangue', 
+            'id', 'nome', 'nif', 'dataNascimento', 'telefone', 'genero', 'tipo_sangue', 
             'idade', 'peso', 'ativo', 'pode_doar', 'dias_espera', 'banco'
         ]
 
