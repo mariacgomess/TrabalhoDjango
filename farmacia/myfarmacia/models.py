@@ -84,7 +84,6 @@ class Dador(models.Model):
         return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
 
     def __str__(self):
-        # CORREÇÃO: Usar tipo_sangue em vez de tipo
         return f"{self.nome} - {self.nif} - {self.tipo_sangue}"
     
 
