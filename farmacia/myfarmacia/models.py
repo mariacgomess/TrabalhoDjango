@@ -32,7 +32,6 @@ class Componente(models.TextChoices):
 
 
 class Dador(models.Model):
-    # ... (mantenha os campos conforme o seu código)
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
     nif = models.CharField(max_length=9, unique=True)
@@ -84,7 +83,6 @@ class Dador(models.Model):
         return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
 
     def __str__(self):
-        # CORREÇÃO: Usar tipo_sangue em vez de tipo
         return f"{self.nome} - {self.nif} - {self.tipo_sangue}"
     
 
@@ -104,7 +102,7 @@ class Doacao(models.Model):
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     valido = models.BooleanField(default=True)
     dador = models.ForeignKey(Dador, on_delete=models.DO_NOTHING, related_name='doacoes')
-    posto = models.ForeignKey(PostoRecolha, on_delete=models.SET_NULL, null=True, related_name='doacoes')
+    posto = models.ForeignKey(PostoRecolha, on_delete=models.DO_NOTHING, null=True, related_name='doacoes')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='doacoes')
 
     def __str__(self):
@@ -128,12 +126,8 @@ class EstadoPedido(models.TextChoices):
  
 class Pedido(models.Model):
     hospital = models.ForeignKey(Hospital, on_delete=models.DO_NOTHING, related_name='listaPedido')
-    data = models.DateField(auto_now_add=True) # Adicione auto_now_add=True
-    estado = models.CharField(
-        max_length=20, 
-        choices=EstadoPedido.choices, 
-        default=EstadoPedido.ATIVO
-    )
+    data = models.DateField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=EstadoPedido.choices, default=EstadoPedido.ATIVO)
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='listaPedidos')
 
     def __str__(self):
@@ -144,7 +138,6 @@ class LinhaPedido(models.Model):
     tipo = models.CharField(max_length=3, choices=TipoSangue.choices, default=TipoSangue.O_NEGATIVO)
     componente = models.CharField(max_length=20, choices=Componente.choices, default=Componente.SANGUE)
     quantidade = models.IntegerField()
-    # CORREÇÃO: CASCADE para permitir apagar pedidos no Admin
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='itens')
     banco = models.ForeignKey(Banco, on_delete=models.CASCADE, related_name='linhaPedido')
 
@@ -166,7 +159,6 @@ class Utilizador(AbstractUser):
 class PerfilPosto(models.Model):
     user = models.OneToOneField(Utilizador, on_delete=models.CASCADE, related_name='perfil_posto')
     posto = models.ForeignKey(PostoRecolha, on_delete=models.CASCADE)
-
     def __str__(self):
         return f"Perfil de {self.user.username} -> {self.posto.nome}"
 

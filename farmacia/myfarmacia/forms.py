@@ -88,20 +88,20 @@ class DadorForm(forms.ModelForm):
         if nif and (len(nif) != 9 or not nif.isdigit()):
             raise forms.ValidationError("O NIF deve conter exatamente 9 dígitos numéricos.")
 
-        # --- AQUI É SÓ PARA QUANDO ESTÁS A CRIAR NOVOS ---
+        # criar novos dadores
         if Dador.objects.filter(nif=nif).exists():
             raise forms.ValidationError("Este NIF já se encontra registado no sistema.")
             
         return nif
+    
 
-# forms.py
-# 1. Formulário para o cabeçalho do Pedido (Data)
+# Formulário para o cabeçalho do Pedido (Data)
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
         fields = []
 
-# 2. Formulário para cada linha individual
+# Formulário para cada linha individual
 class LinhaPedidoForm(forms.ModelForm):
     class Meta:
         model = LinhaPedido
@@ -114,7 +114,7 @@ class LinhaPedidoForm(forms.ModelForm):
         self.fields['componente'].initial = None
         self.fields['quantidade'].required = False
 
-# 3. O Formset que une o Pedido às suas várias Linhas
+# O Formset que une o Pedido às suas várias Linhas
 PedidoLinhaFormSet = inlineformset_factory(
     Pedido, 
     LinhaPedido,
@@ -124,7 +124,7 @@ PedidoLinhaFormSet = inlineformset_factory(
 )
     
 class DoacaoForm(forms.ModelForm):
-    # Criamos um campo extra que NÃO existe no modelo Doacao
+    # Criar um campo extra que nao existe no modelo Doacao
     nif_dador = forms.CharField(
         label="NIF do Dador",
         max_length=9,
@@ -133,8 +133,7 @@ class DoacaoForm(forms.ModelForm):
 
     class Meta:
         model = Doacao
-        # REMOVEMOS o campo 'dador' desta lista para não aparecer o dropdown
-        fields = ["componente", "banco"] # Podes adicionar data/hora se precisares
+        fields = ["componente", "banco"] 
 
     # Validar se o NIF existe e se o dador é válido
     def clean_nif_dador(self):
@@ -150,15 +149,14 @@ class DoacaoForm(forms.ModelForm):
         if not dador.ativo:
             raise forms.ValidationError(f"O dador {dador.nome} está inativo e não pode doar.")
 
-        # Se tudo estiver bem, devolvemos o OBJETO Dador
+        # Se tudo estiver bem, devolve o objeto Dador
         return dador
 
-    # Sobrescrever o Save para ligar as peças
+    # Sobrescrever o Save para ligar tudo
     def save(self, commit=True):
         # Cria a doação na memória mas não grava ainda (commit=False)
         doacao = super().save(commit=False)
         
-        # Vamos buscar o Dador que encontrámos na função clean_nif_dador e associamos à doação manualmente
         doacao.dador = self.cleaned_data['nif_dador']
         doacao.valido= True
         if commit:
