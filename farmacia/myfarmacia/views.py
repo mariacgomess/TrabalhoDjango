@@ -24,8 +24,6 @@ from .models import Pedido # Substitua pelo nome correto do seu modelo
 from django.contrib import messages
 
 
-
-
 # --- Navegação Base ---
 def home(request):
     return render(request, "base.html")
