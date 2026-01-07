@@ -25,6 +25,7 @@ from django.contrib import messages
 
 
 
+
 # --- Navegação Base ---
 def home(request):
     return render(request, "base.html")
