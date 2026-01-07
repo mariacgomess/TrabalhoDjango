@@ -35,7 +35,7 @@ class Dador(models.Model):
     # ... (mantenha os campos conforme o seu código)
     nome = models.CharField(max_length=100)
     dataNascimento = models.DateField()
-    nif = models.CharField(max_length=10, unique=True)
+    nif = models.CharField(max_length=9, unique=True)
     genero = models.CharField(max_length=3, choices=Genero.choices)
     peso = models.DecimalField(max_digits=5, decimal_places=2)
     telefone = models.CharField(max_length=9, unique=True)
@@ -84,7 +84,6 @@ class Dador(models.Model):
         return self.ativo and self.idade >= 18 and self.peso >= 50 and self.dias_espera_restantes == 0
 
     def __str__(self):
-        # CORREÇÃO: Usar tipo_sangue em vez de tipo
         return f"{self.nome} - {self.nif} - {self.tipo_sangue}"
     
 

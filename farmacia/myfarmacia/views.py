@@ -19,6 +19,10 @@ from .serializers import (
 )
 import csv
 from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Pedido # Substitua pelo nome correto do seu modelo
+from django.contrib import messages
+
 
 
 # --- Navegação Base ---
@@ -100,6 +104,24 @@ def pagina_admin(request):
 
 }
     return render(request, 'admin_dashboard.html', context)
+
+@login_required
+def listar_pedidos_admin(request):
+    # O Admin vê TUDO de TODOS os hospitais
+    pedidos = Pedido.objects.all().prefetch_related('itens').order_by('-data')
+    return render(request, 'listar_pedidos_admin.html', {
+        'pedidos': pedidos,
+        'titulo': "Gestão Global de Pedidos"
+    })
+
+@login_required
+def rejeitar_pedido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id)
+    # O Admin pode mudar o estado sem a restrição de "ser dono" do pedido
+    pedido.estado = "rejeitado" 
+    pedido.save()
+    messages.success(request, f"Pedido #{pedido.id} foi rejeitado pela administração.")
+    return redirect('listar_pedidos_admin')
 
 
 @login_required
@@ -258,7 +280,7 @@ def stock_por_tipo(request):
         valores.append(total)
 
     return render(request, 'consultar_stock.html', {
-        'titulo': "Stock Total por Grupo Sanguíneo",
+        'titulo': "Stock Total por Tipo Sanguíneo",
         'combinacoes': combinacoes,
         'labels': tipos, # As labels são os tipos A+, A-, etc.
         'valores': valores
@@ -270,7 +292,7 @@ def stock_por_componente(request):
         return redirect('home')
 
     # Lista fixa de componentes que queres que apareçam sempre
-    componentes_obrigatorios = ["Sangue", "Plasma", "Globulos Vermelhos"]
+    componentes_obrigatorios = ["Sangue", "Plasma", "Globulos Vermelhos", "Plaquetas"]
     
     combinacoes = []
     valores = []
@@ -896,7 +918,7 @@ def estatisticas_hospital(request):
     
     perfil = getattr(request.user, 'perfil_hospital', None)
     hospital = perfil.hospital if perfil else None
-    
+       
     # KPIs (Cartões Superiores)
     total_pedidos = Pedido.objects.filter(hospital=hospital).count()
     concluidos = Pedido.objects.filter(hospital=hospital, estado='concluido').count()
@@ -956,19 +978,18 @@ class PostoRecolhaViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class DadorViewSet(viewsets.ModelViewSet):
-    serializer_class = DadorSerializer
     permission_classes = [IsAuthenticated]
-    queryset = Dador.objects.all() 
     serializer_class = DadorSerializer
 
     def get_queryset(self):
         user = self.request.user
-        # Se for admin, vê tudo. Se for posto, vê apenas os dadores do banco dele.
+        if user.is_anonymous:
+            return Dador.objects.none()
+        if user.tipo == 'admin':
+            return Dador.objects.all()
         if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             return Dador.objects.filter(banco=user.perfil_posto.posto.banco)
-        elif user.tipo == 'admin':
-            return Dador.objects.all()
-        return Dador.objects.none() # Hospital não deve ver dadores
+        return Dador.objects.none()
 
 class DoacaoViewSet(viewsets.ModelViewSet):
     queryset = Doacao.objects.all()
@@ -976,13 +997,14 @@ class DoacaoViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        # Associa automaticamente o posto do utilizador logado à doação
-        if self.request.user.tipo == 'posto':
+        user = self.request.user
+        if user.tipo == 'posto' and hasattr(user, 'perfil_posto'):
             serializer.save(
-                posto=self.request.user.perfil_posto.posto,
-                banco=self.request.user.perfil_posto.posto.banco
+                posto=user.perfil_posto.posto,
+                banco=user.perfil_posto.posto.banco
             )
         else:
+            # Se for admin, ele tem de enviar o posto e banco manualmente no JSON
             serializer.save()
 
 class HospitalViewSet(viewsets.ModelViewSet):

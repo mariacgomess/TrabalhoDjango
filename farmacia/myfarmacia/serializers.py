@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from django.db import transaction
+from datetime import date
 from .models import (
     Utilizador, Banco, PostoRecolha, Hospital, 
     Dador, Doacao, Pedido, LinhaPedido, PerfilPosto, PerfilHospital
 )
 
-# 1. Utilizador (Essencial para Auth e Perfis)
+# Utilizador (Essencial para Auth e Perfis)
 class UtilizadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Utilizador
@@ -16,13 +17,13 @@ class UtilizadorSerializer(serializers.ModelSerializer):
         user = Utilizador.objects.create_user(**validated_data)
         return user
 
-# 2. Banco
+# Banco
 class BancoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banco
         fields = '__all__'
 
-# 3. Postos de Recolha e Perfil
+# Postos de Recolha e Perfil
 class PostoRecolhaSerializer(serializers.ModelSerializer):
     banco_nome = serializers.ReadOnlyField(source='banco.nome')
 
@@ -38,7 +39,7 @@ class PerfilPostoSerializer(serializers.ModelSerializer):
         model = PerfilPosto
         fields = ['id', 'user', 'user_details', 'posto', 'posto_nome']
 
-# 4. Hospitais e Perfil
+# Hospitais e Perfil
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hospital
@@ -49,7 +50,7 @@ class PerfilHospitalSerializer(serializers.ModelSerializer):
         model = PerfilHospital
         fields = '__all__'
 
-# 5. Dadores (Com campos de negócio calculados)
+# Dadores 
 class DadorSerializer(serializers.ModelSerializer):
     idade = serializers.ReadOnlyField() 
     pode_doar = serializers.ReadOnlyField()
@@ -58,11 +59,43 @@ class DadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dador
         fields = [
-            'id', 'nome', 'nif', 'genero', 'tipo_sangue', 
+            'id', 'nome', 'nif', 'dataNascimento', 'telefone', 'genero', 'tipo_sangue', 
             'idade', 'peso', 'ativo', 'pode_doar', 'dias_espera', 'banco'
         ]
 
-# 6. Doações
+    # Validacao da idade
+    def validate_dataNascimento(self, value):
+        hoje = date.today()
+        # Cálculo preciso da idade
+        idade = hoje.year - value.year - ((hoje.month, hoje.day) < (value.month, value.day))
+
+        if idade < 18:
+            raise serializers.ValidationError("O dador deve ser maior de idade (mínimo 18 anos).")
+        
+        if idade > 65:
+            raise serializers.ValidationError("A idade limite para doação é 65 anos.")
+
+        return value
+    
+    # validacao de peso
+    def validate_peso(self, value):
+        if value < 50.0:
+            raise serializers.ValidationError("O dador deve pesar no mínimo 50kg para poder doar.")
+        return value
+    
+    #validacao do nif
+    def validate_nif(self, value):
+        nif_str = str(value)
+        # Verifica formato (9 dígitos)
+        if len(nif_str) != 9 or not nif_str.isdigit():
+            raise serializers.ValidationError("O NIF deve conter exatamente 9 dígitos numéricos.")
+
+        # Verifica unicidade (se já existe na base de dados)
+        if Dador.objects.filter(nif=value).exists():
+            raise serializers.ValidationError("Este NIF já se encontra registado no sistema.")
+        return value
+
+# Doações
 class DoacaoSerializer(serializers.ModelSerializer):
     dador_nome = serializers.ReadOnlyField(source='dador.nome')
     tipo_sangue = serializers.ReadOnlyField(source='dador.tipo_sangue')
@@ -71,7 +104,28 @@ class DoacaoSerializer(serializers.ModelSerializer):
         model = Doacao
         fields = ['id', 'data', 'componente', 'valido', 'dador', 'dador_nome', 'tipo_sangue', 'posto', 'banco']
 
-# 7. Pedidos e Linhas (Com lógica de criação aninhada)
+    def validate_dador(self, value):
+        # Se chegámos aqui, o dador existe. Vamos só ver se está ativo.
+        if not value.ativo:
+             raise serializers.ValidationError(f"O dador {value.nome} está inativo e não pode doar.")
+
+        return value
+    
+    def create(self, validated_data):
+        # Cria a doação normalmente usando a lógica padrão
+        doacao = super().create(validated_data)
+
+        # Recupera o dador associado a esta doação
+        dador_atual = doacao.dador
+
+        # Atualiza o estado do dador
+        dador_atual.ativo = False
+        dador_atual.save()
+
+        # D. Retorna a doação criada
+        return doacao
+
+# Pedidos e Linhas 
 class LinhaPedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = LinhaPedido
