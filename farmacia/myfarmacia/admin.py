@@ -6,7 +6,7 @@ from .models import (
     Hospital, Pedido, LinhaPedido, Utilizador, PerfilPosto, PerfilHospital
 )
 
-# --- INLINES (Para edição em massa na mesma página) ---
+# --- INLINES (Para edição na mesma página) ---
 
 class PostoInline(admin.TabularInline):
     model = PostoRecolha
@@ -50,13 +50,26 @@ class DadorAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Informação Pessoal', {'fields': ('nome', 'dataNascimento', 'genero', 'nif', 'telefone')}),
         ('Dados Clínicos', {'fields': ('tipo_sangue', 'peso', 'ativo')}),
-        ('Administração', {'fields': ('banco', 'ultimaDoacao', 'idade', 'dias_espera_restantes')}),
+        ('Administração', {'fields': ('banco', 'ultimaDoacao')}),
     )
 
     def status_aptidao(self, obj):
-        if obj.pode_doar:
-            return format_html('<span style="color: white; background: #2ecc71; padding: 3px 10px; border-radius: 10px; font-weight: bold;">APTO</span>')
-        return format_html('<span style="color: white; background: #e74c3c; padding: 3px 10px; border-radius: 10px; font-weight: bold;">{} DIAS</span>', obj.dias_espera_restantes)
+        if not obj:  # segurança extra
+            return "-"
+        
+        pode = getattr(obj, "pode_doar", False)
+        dias = getattr(obj, "dias_espera_restantes", 0) or 0
+        
+        if pode:
+            return format_html(
+                '<span style="color:white; background:#2ecc71; padding:3px 10px; border-radius:10px; font-weight:bold;">{}</span>',
+                "APTO"
+            )
+        else:
+            return format_html(
+                '<span style="color:white; background:#e74c3c; padding:3px 10px; border-radius:10px; font-weight:bold;">{} DIAS</span>',
+                dias
+            )
     
     status_aptidao.short_description = 'Disponibilidade'
 

@@ -105,14 +105,13 @@ class DoacaoSerializer(serializers.ModelSerializer):
         fields = ['id', 'data', 'componente', 'valido', 'dador', 'dador_nome', 'tipo_sangue', 'posto', 'banco']
 
     def validate_dador(self, value):
-        # Se chegámos aqui, o dador existe. Vamos só ver se está ativo.
         if not value.ativo:
              raise serializers.ValidationError(f"O dador {value.nome} está inativo e não pode doar.")
 
         return value
     
     def create(self, validated_data):
-        # Cria a doação normalmente usando a lógica padrão
+        # Cria a doação usando a lógica padrão
         doacao = super().create(validated_data)
 
         # Recupera o dador associado a esta doação
@@ -122,7 +121,7 @@ class DoacaoSerializer(serializers.ModelSerializer):
         dador_atual.ativo = False
         dador_atual.save()
 
-        # D. Retorna a doação criada
+        # Retorna a doação criada
         return doacao
 
 # Pedidos e Linhas 

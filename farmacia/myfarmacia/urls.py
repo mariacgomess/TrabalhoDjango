@@ -6,7 +6,7 @@ from .views import (
     PedidoViewSet, BancoViewSet, PostoRecolhaViewSet, LinhaPedidoViewSet
 )
 
-# 1. Configuração do Router para a API (Aplicações Distribuídas)
+# Configuração do Router para a API (Aplicações Distribuídas)
 router = DefaultRouter()
 # No teu ficheiro myfarmacia/urls.py
 router.register(r'bancos', BancoViewSet, basename='banco')
@@ -63,7 +63,7 @@ urlpatterns = [
     path("posto/gestao_doacoes/consultar_doacoes/", views.consultar_doacoes, name="consultar_doacoes"),
 
     # --- PAINEL HOSPITAL ---
-     path('hospital/', views.pagina_hospital, name='pagina_hospital'),
+    path('hospital/', views.pagina_hospital, name='pagina_hospital'),
     path('hospital/gestao_hospital/',views.gestao_hospital, name='gestao_hospital'),
     path('hospital/gestao_hospital/atualizar_hospital/',views.atualizar_hospital, name='atualizar_hospital'),
     path('hospital/gestao_hospital/consultar_hospital/',views.consultar_hospital, name='consultar_hospital'),

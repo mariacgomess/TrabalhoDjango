@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -51,7 +50,7 @@ def login_view(request):
             elif user.tipo == 'posto':
                 return redirect('pagina_posto')
             else:
-                # Caso o user não tenha tipo definido (ex: superuser novo)
+                # Caso o user não tenha tipo definido
                 messages.warning(request, "Utilizador sem perfil atribuído.")
                 return redirect('home')
         else:
@@ -65,7 +64,6 @@ def pagina_admin(request):
     if request.user.tipo != 'admin':
         return redirect('home')
     
-    # KPIs Básicos
     stock_total = Doacao.objects.filter(valido=True).count()
     total_postos = PostoRecolha.objects.count()
     total_hospitais = Hospital.objects.count()
@@ -107,7 +105,7 @@ def pagina_admin(request):
 
 @login_required
 def listar_pedidos_admin(request):
-    # O Admin vê TUDO de TODOS os hospitais
+    # O Admin vê todos os hospitais
     pedidos = Pedido.objects.all().prefetch_related('itens').order_by('-data')
     return render(request, 'listar_pedidos_admin.html', {
         'pedidos': pedidos,
@@ -211,19 +209,19 @@ def criar_hospital_view(request):
         'titulo': "Criar Novo Hospital"
     })
 
-# --- Páginas Simples ---
+
 
 @login_required
 def pagina_hospital(request):
     if request.user.tipo != 'hospital':
         return redirect('login')
 
-    # 1. Identificar instâncias
+    # Identificar instâncias
     perfil = getattr(request.user, 'perfil_hospital', None)
     hospital_instancia = perfil.hospital if perfil else None
     banco_instancia = hospital_instancia.banco if hospital_instancia else None
 
-    # 2. Cálculos de Stock e Pedidos
+    # Cálculos de Stock e Pedidos
     qtd_stock_global = 0
     if banco_instancia:
         qtd_stock_global = Doacao.objects.filter(banco=banco_instancia, valido=True).count()
@@ -235,7 +233,7 @@ def pagina_hospital(request):
             estado='ativo'
         ).count()
 
-    # 3. Enviar para o HTML com os nomes corretos (stock_total2 e pedidos_pendentes2)
+    # Enviar para o HTML com os nomes corretos 
     return render(request, 'hospital.html', {
         'nome_hospital': hospital_instancia.nome if hospital_instancia else "Hospital",
         'nome_banco': banco_instancia.nome if banco_instancia else "Banco Central",
@@ -247,7 +245,6 @@ def pagina_hospital(request):
 
 @login_required
 def pagina_posto(request):
-    # Verificação de segurança: usa 'posto' conforme o seu AbstractUser
     if request.user.tipo != 'posto':
         messages.error(request, "Acesso negado. Apenas postos podem entrar aqui.")
         return redirect('login')
@@ -299,7 +296,6 @@ def stock_por_componente(request):
 
     for comp in componentes_obrigatorios:
         # Contagem real na base de dados
-        # Nota: Certifica-te que 'comp' coincide com o que guardas no Model
         total = Doacao.objects.filter(componente__iexact=comp, valido=True).count()
         
         # Adicionamos à lista, mesmo que o total seja 0
@@ -316,8 +312,7 @@ def stock_por_componente(request):
 @login_required
 def stock_total_central(request):
     tipos = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
-    # Garante que estes nomes batem certo com a tua BD
-    comps = ["Sangue", "Plasma", "Globulos Vermelhos"]
+    comps = ["Sangue", "Plasma", "Plaquetas", "Globulos Vermelhos"]
     limite = 5
     stock_ideal = 20
 
@@ -369,13 +364,12 @@ def listar_postos(request):
 
 @login_required
 def logout_view(request):
-    django_logout(request) # Usamos o nome que definimos no import
+    django_logout(request) 
     return redirect('home')
 
 
 @login_required
 def gestao_dadores(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'gestao_dadores.html',
         {'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
         'ultimo_login': request.user.last_login, # Pega na data real do último login
@@ -384,7 +378,6 @@ def gestao_dadores(request):
 
 @login_required
 def gestao_doacoes(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'gestao_doacoes.html',
         {'nome_banco': Banco.objects.first().nome if Banco.objects.exists() else "Banco Central",
         'ultimo_login': request.user.last_login, # Pega na data real do último login
@@ -476,7 +469,7 @@ def atualizar_informacao(request):
             if form.is_valid():
                 form.save()
                 messages.success(request, f"Dados de {dador.nome} atualizados com sucesso!")
-                return redirect('gestao_dadores') # Ou redireciona para onde quiseres
+                return redirect('gestao_dadores')
         else:
             # Se acabou de pesquisar, mostramos o formulário preenchido
             form = DadorForm(instance=dador)
@@ -540,12 +533,12 @@ def ativar_dador(request):
         nif = request.POST.get('nif')
         dador = get_object_or_404(Dador, nif=nif)
         
-        # 1. Verificar idade (já tinhas e está bem)
+        # Verificar idade
         if dador.idade < 18:
             messages.error(request, "Impossível ativar: dador menor de idade.")
             return redirect('gestao_dadores')
 
-        # 2. Verificar se o período de repouso já passou
+        # Verificar se o período de repouso já passou
         ultima = Doacao.objects.filter(dador=dador).order_by('-data').first()
         if ultima:
             intervalo = 120 if dador.genero == 'Feminino' else 90
@@ -565,7 +558,6 @@ def ativar_dador(request):
 
 @login_required
 def listar_dadores(request):
-    # Lógica futura aqui. Por agora, apenas mostra a página.
     return render(request, 'listar_dadores.html')
 
 
@@ -573,7 +565,7 @@ def listar_dadores(request):
 def dadores_tipo_sangue(request):
     dadores_por_grupo = {}
     for codigo, nome_bonito in TipoSangue.choices:
-        # Filtramos pelo código (que é o que está guardado na base de dados)
+        # Filtramos pelo código 
         dadores = Dador.objects.filter(tipo_sangue=codigo)
         dadores_por_grupo[nome_bonito] = dadores
             
@@ -587,14 +579,13 @@ def dadores_tipo_sangue(request):
 def dadores_apenas_ativos(request):
     dadores_validos = Dador.objects.filter(ativo=True)
     return render(request, 'dadores_apenas_ativos.html', {
-        'dadores': dadores_validos,  # <--- O HTML PROCURA ESTE NOME 'dadores'
+        'dadores': dadores_validos,  # O HTML procura este 'dadores'
         'titulo': "Dadores Ativos"
     })
 
 
 @login_required
 def gestao_hospital(request):
-    
     return render(request, 'gestao_hospital.html')
 
 
@@ -615,7 +606,7 @@ def atualizar_hospital(request):
     if perfil_hospital:
         hospital = perfil_hospital.hospital
     else:
-        # Se entrar aqui, é porque o utilizador logado não tem um PerfilHospital criado no Admin
+        # Se aparecer isto, é porque o utilizador logado não tem um PerfilHospital criado no Admin
         messages.warning(request, "Este utilizador não tem um hospital associado.")
 
     if request.method == 'POST':
@@ -666,13 +657,13 @@ def criar_pedido(request):
         formset = PedidoLinhaFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
-            # 1. Salvar o cabeçalho do pedido
+            # Salvar o cabeçalho do pedido
             pedido = form.save(commit=False)
             pedido.hospital = hospital_instancia
             pedido.banco = banco_instancia
             pedido.save()
 
-            # 2. Salvar as linhas do pedido e guardá-las numa lista para verificação
+            # Salvar as linhas do pedido e guardá-las numa lista para verificação
             linhas_criadas = []
             for f in formset:
                 if f.cleaned_data.get('quantidade') and f.cleaned_data.get('quantidade') > 0:
@@ -682,7 +673,6 @@ def criar_pedido(request):
                     linha.save()
                     linhas_criadas.append(linha)
 
-            # 3. VERIFICAÇÃO DE STOCK AUTOMÁTICA
             pode_satisfazer_agora = True
             for linha in linhas_criadas:
                 stock_atual = Doacao.objects.filter(
@@ -696,10 +686,10 @@ def criar_pedido(request):
                     pode_satisfazer_agora = False
                     break
 
-            # 4. CONSUMO DE STOCK (Mudar estado para inválido)
+            # consumo de stock
             if pode_satisfazer_agora and linhas_criadas:
                 for linha in linhas_criadas:
-                    # Seleciona as doações mais antigas para usar primeiro (FIFO)
+                    # Seleciona as doações mais antigas para usar primeiro 
                     doacoes_a_consumir = Doacao.objects.filter(
                         dador__tipo_sangue=linha.tipo,
                         componente=linha.componente,
@@ -731,7 +721,6 @@ def criar_pedido(request):
 
 @login_required
 def cancelar_pedido(request, pedido_id):
-    """Cancela um pedido pendente mudando o estado para 'cancelado'"""
     # Procura o pedido pelo ID
     pedido = get_object_or_404(Pedido, id=pedido_id)
     
@@ -754,7 +743,6 @@ def cancelar_pedido(request, pedido_id):
 
 @login_required
 def listar_pedidos_hospital(request):
-    """Lista o histórico de pedidos do hospital logado"""
     if request.user.tipo != 'hospital':
         return redirect('home')
 
@@ -780,7 +768,7 @@ def registar_doacao(request):
         if doacao_form.is_valid():
             dador = doacao_form.cleaned_data['nif_dador']
             
-            # BLOQUEIO: Só doa se dador estiver apto
+            # Só doa se dador estiver apto
             if not dador.ativo:
                 messages.error(request, f"O dador {dador.nome} não está apto para doar atualmente.")
                 return redirect('gestao_doacoes')
@@ -788,7 +776,7 @@ def registar_doacao(request):
             # Salvar a nova doação como disponível (valido=True)
             doacao_nova = doacao_form.save(commit=False)
 
-            # 2. ATRIBUIÇÃO AUTOMÁTICA DO POSTO E VALIDADE
+            # atribuicao automatica do posto e validade
             perfil = getattr(request.user, 'perfil_posto', None)
             if perfil:
                 doacao_nova.posto = perfil.posto # Preenche o posto automaticamente
@@ -802,7 +790,7 @@ def registar_doacao(request):
             dador.ativo = False 
             dador.save()
 
-            # --- TENTAR SATISFAZER PEDIDOS ATIVOS LOGO APÓS A DOAÇÃO ---
+            # tentar satisfazer pedidos ativos logo após a docoao
             pedidos_ativos = Pedido.objects.filter(
                 estado="ativo", 
                 banco=doacao_nova.banco
@@ -864,7 +852,7 @@ def historico_dador(request):
             messages.warning(request, f"Nenhum dador encontrado com o NIF '{search_nif}'")
     dias_restantes = 0
     if dador_encontrado:
-        ultima = lista_doacoes.first() # Já está order_by -data
+        ultima = lista_doacoes.first() 
         if ultima:
             intervalo = 120 if dador_encontrado.genero == 'Feminino' else 90
             dias_passados = (date.today() - ultima.data).days
@@ -904,7 +892,7 @@ def consultar_doacoes(request):
     for item in por_tipo:
         item['percentagem'] = (item['qtd'] / total_geral * 100) if total_geral > 0 else 0
 
-    # IMPORTANTE: O return deve estar fora do loop 'for'
+    # O return deve estar fora do loop 'for'
     return render(request, 'consultar_doacoes.html', {
         'doacoes': doacoes,
         'titulo': "Consultar doações",
@@ -919,14 +907,12 @@ def estatisticas_hospital(request):
     perfil = getattr(request.user, 'perfil_hospital', None)
     hospital = perfil.hospital if perfil else None
        
-    # KPIs (Cartões Superiores)
     total_pedidos = Pedido.objects.filter(hospital=hospital).count()
     concluidos = Pedido.objects.filter(hospital=hospital, estado='concluido').count()
     ativos = Pedido.objects.filter(hospital=hospital, estado='ativo').count()
     total_unidades = LinhaPedido.objects.filter(pedido__hospital=hospital).aggregate(Sum('quantidade'))['quantidade__sum'] or 0
 
-    # Gráfico de Barras: Distribuição por Tipo de Sangue mais pedido
-    # Calculamos a percentagem para as barras de progresso
+    # Gráfico de Barras: Distribuição por Tipo de Sangue mais pedido - Calculamos a percentagem para as barras de progresso
     por_tipo = LinhaPedido.objects.filter(pedido__hospital=hospital).values('tipo').annotate(qtd=Sum('quantidade')).order_by('-qtd')
     
     for item in por_tipo:
