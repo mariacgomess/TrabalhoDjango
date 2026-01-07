@@ -138,7 +138,7 @@
 
         <div class="grid-container">
             <div class="card">
-                <h3 class="card-h">Performance por Posto</h3>
+                <h3 class="card-h">Número de Dadores por Posto</h3>
                 {% for p in ranking_postos %}
                 <div class="bar-row">
                     <div class="bar-label"><span>{{ p.posto__nome }}</span><span>{{ p.total }}</span></div>
@@ -152,7 +152,7 @@
             </div>
 
             <div class="card">
-                <h3 class="card-h">Distribuição de Fenótipos</h3>
+                <h3 class="card-h">Distribuição de Tipos de Sangue</h3>
                 {% for item in por_tipo %}
                 <div class="bar-row">
                     <div class="bar-label"><span>{{ item.dador__tipo_sangue }}</span><span>{{ item.percentagem }}%</span></div>

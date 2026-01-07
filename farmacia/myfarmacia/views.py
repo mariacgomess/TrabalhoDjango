@@ -394,14 +394,13 @@ from datetime import timedelta
 
 @login_required
 def consultas_estatisticas(request):
-    # 1. Filtros
     posto_id = request.GET.get('posto')
     data_ini = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
 
     doacoes_qs = Doacao.objects.all()
     
-    # 2. Aplicação de Filtros
+    # Aplicação de Filtros
     if posto_id:
         doacoes_qs = doacoes_qs.filter(posto_id=posto_id)
     
@@ -410,23 +409,21 @@ def consultas_estatisticas(request):
     else:
         doacoes_qs = doacoes_qs.filter(data__gte=timezone.now() - timedelta(days=365))
 
-    # 3. Dados para os KPIs
     total_periodo = doacoes_qs.count()
     
-    # 4. GRÁFICO 1: Distribuição por Tipo (O que já tinhas)
+    # Distribuição por Tipo 
     por_tipo = doacoes_qs.values('dador__tipo_sangue').annotate(qtd=Count('id')).order_by('dador__tipo_sangue')
     for item in por_tipo:
         item['percentagem'] = round((item['qtd'] / total_periodo * 100), 1) if total_periodo > 0 else 0
 
-    # 5. GRÁFICO 2: Comparativo entre Postos (NOVO)
-    # Mostra a performance de cada posto no período selecionado
+    # Comparativo entre Postos
     ranking_postos = Doacao.objects.values('posto__nome').annotate(total=Count('id')).order_by('-total')
     max_doacoes = ranking_postos.aggregate(Max('total'))['total__max'] or 1
 
     for p in ranking_postos:
         p['p_rank'] = (p['total'] / max_doacoes) * 100
 
-    # 6. GRÁFICO 3: Evolução Mensal (NOVO)
+    # Evolução Mensal
     evolucao = doacoes_qs.annotate(mes=TruncMonth('data')).values('mes').annotate(qtd=Count('id')).order_by('mes')
 
     return render(request, 'consultas_estatisticas.html', {
