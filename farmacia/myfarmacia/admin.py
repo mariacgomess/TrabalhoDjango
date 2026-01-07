@@ -57,7 +57,7 @@ class DadorAdmin(admin.ModelAdmin):
         if not obj:  # segurança extra
             return "-"
         
-        pode = getattr(obj, "pode_doar", False)
+        pode = getattr(obj, "pode_doar", True)
         dias = getattr(obj, "dias_espera_restantes", 0) or 0
         
         if pode:
@@ -87,6 +87,16 @@ class DoacaoAdmin(admin.ModelAdmin):
         # Link direto para a ficha do dador
         return format_html('<a href="/admin/myfarmacia/dador/{}/change/">{}</a>', obj.dador.id, obj.dador.nome)
     dador_link.short_description = 'Dador'
+
+    def save_model(self, request, obj, form, change):
+        # Guarda a doação 
+        super().save_model(request, obj, form, change)
+        
+        # Atualiza o dador automaticamente
+        if obj.dador:
+            obj.dador.ativo = False
+            obj.dador.ultimaDoacao = obj.data
+            obj.dador.save()
 
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):

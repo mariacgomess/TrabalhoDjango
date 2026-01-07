@@ -119,6 +119,7 @@ class DoacaoSerializer(serializers.ModelSerializer):
 
         # Atualiza o estado do dador
         dador_atual.ativo = False
+        dador_atual.ultimaDoacao = date.today()
         dador_atual.save()
 
         # Retorna a doação criada
