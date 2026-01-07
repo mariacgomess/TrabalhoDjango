@@ -23,7 +23,6 @@ from .models import Pedido # Substitua pelo nome correto do seu modelo
 from django.contrib import messages
 
 
-
 # --- Navegação Base ---
 def home(request):
     return render(request, "base.html")
@@ -383,34 +382,65 @@ def gestao_doacoes(request):
         'ultimo_login': request.user.last_login, # Pega na data real do último login
         })
 
+
+from django.db.models import Count
+from django.utils import timezone
+from datetime import datetime, timedelta
+
+from django.db.models import Count, Max
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
+from datetime import timedelta
+
 @login_required
 def consultas_estatisticas(request):
-    # Total no último ano (365 dias)
-    um_ano_atras = timezone.now() - timedelta(days=365)
-    total_ano = Doacao.objects.filter(data__gte=um_ano_atras).count()
+    # 1. Filtros
+    posto_id = request.GET.get('posto')
+    data_ini = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
 
-    # Totais Gerais
-    total_geral = Doacao.objects.count()
-    total_dadores = Dador.objects.filter(ativo=True).count()
-
-    # Válidas vs Inválidas
-    total_validas = Doacao.objects.filter(valido=True).count()
+    doacoes_qs = Doacao.objects.all()
     
-    # Agrupamento por Tipo de Sangue- Isto cria uma lista: [{'dador__tipo_sangue': 'A+', 'total': 15}, {'dador__tipo_sangue': 'O-', 'total': 3}]
-    por_tipo = Doacao.objects.values('dador__tipo_sangue').annotate(qtd=Count('id')).order_by('dador__tipo_sangue')
+    # 2. Aplicação de Filtros
+    if posto_id:
+        doacoes_qs = doacoes_qs.filter(posto_id=posto_id)
+    
+    if data_ini and data_fim:
+        doacoes_qs = doacoes_qs.filter(data__range=[data_ini, data_fim])
+    else:
+        doacoes_qs = doacoes_qs.filter(data__gte=timezone.now() - timedelta(days=365))
+
+    # 3. Dados para os KPIs
+    total_periodo = doacoes_qs.count()
+    
+    # 4. GRÁFICO 1: Distribuição por Tipo (O que já tinhas)
+    por_tipo = doacoes_qs.values('dador__tipo_sangue').annotate(qtd=Count('id')).order_by('dador__tipo_sangue')
     for item in por_tipo:
-        if total_geral > 0:
-            item['percentagem'] = round((item['qtd'] / total_geral) * 100, 1)
-        else:
-            item['percentagem'] = 0
+        item['percentagem'] = round((item['qtd'] / total_periodo * 100), 1) if total_periodo > 0 else 0
+
+    # 5. GRÁFICO 2: Comparativo entre Postos (NOVO)
+    # Mostra a performance de cada posto no período selecionado
+    ranking_postos = Doacao.objects.values('posto__nome').annotate(total=Count('id')).order_by('-total')
+    max_doacoes = ranking_postos.aggregate(Max('total'))['total__max'] or 1
+
+    for p in ranking_postos:
+        p['p_rank'] = (p['total'] / max_doacoes) * 100
+
+    # 6. GRÁFICO 3: Evolução Mensal (NOVO)
+    evolucao = doacoes_qs.annotate(mes=TruncMonth('data')).values('mes').annotate(qtd=Count('id')).order_by('mes')
 
     return render(request, 'consultas_estatisticas.html', {
-        'total_ano': total_ano,
-        'total_geral': total_geral,
-        'total_dadores': total_dadores,
-        'total_validas': total_validas,
+        'todos_postos': PostoRecolha.objects.all(),
+        'posto_sel': int(posto_id) if posto_id else None,
+        'data_ini': data_ini,
+        'data_fim': data_fim,
+        'total_periodo': total_periodo,
+        'total_validas': doacoes_qs.filter(valido=True).count(),
+        'total_dadores': Dador.objects.filter(ativo=True).count(),
         'por_tipo': por_tipo,
-        'titulo': "Estatísticas e Consultas"
+        'ranking_postos': ranking_postos,
+        'evolucao': evolucao,
+        'titulo': "Dashboard Analítico"
     })
 
 
